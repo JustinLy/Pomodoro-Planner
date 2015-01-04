@@ -27,6 +27,7 @@ public class WorkSchedule extends Observable {
 	 */
 	public WorkSchedule( WorkSchedule previousSchedule ) {
 		this.schedule = previousSchedule.schedule;
+		setChanged();
 		notifyObservers();
 		}
 	
@@ -54,6 +55,7 @@ public class WorkSchedule extends Observable {
 			throw new IllegalArgumentException( "Error: Must input TODAY, TOMORROW, OR DAY_AFTER" );
 		else {
 			schedule.get(day).add( new Task(taskName, taskLength));
+			setChanged();
 			notifyObservers();
 		}
 	}
@@ -74,6 +76,7 @@ public class WorkSchedule extends Observable {
 			oldList.remove(oldPosition); //Remove from original day's list
 			List<Task> newList = schedule.get(newDay);
 			newList.add(newPosition, movingTask); //Add to new day's list at specified position
+			setChanged();
 			notifyObservers();
 		}
 	}
@@ -88,6 +91,7 @@ public class WorkSchedule extends Observable {
 	public void switchTasks( int day1, int position1, int day2, int position2 ) {
 		moveTask( day1, position1, day2, position2 ); //Move task1 to  position of task2
 		moveTask( day2, position2+1, day1, position1 ); //Move task2 to position of task 1
+		setChanged();
 		notifyObservers();
 	}
 	
@@ -101,6 +105,7 @@ public class WorkSchedule extends Observable {
 			throw new IllegalArgumentException("Error: Invalid day or position\n" );
 		else {
 			schedule.get(day).remove(position);
+			setChanged();
 			notifyObservers();
 		}
 	}
@@ -122,6 +127,7 @@ public class WorkSchedule extends Observable {
 		tomorrow.clear();
 		tomorrow.addAll(dayAfter); //Move all of DAY_AFTER's tasks to tomorrow
 		dayAfter.clear(); 
+		setChanged();
 		notifyObservers();
 	}
 	
