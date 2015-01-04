@@ -40,6 +40,7 @@ public class Controller {
 			this.workView = workView;
 			this.workSchedule = workSchedule;
 			this.workSession = workSession;
+			registerScheduleComponents();
 		}
 
 	/**
@@ -54,6 +55,7 @@ public class Controller {
 		listeners[3] = scheduleController.new completeDayListener();
 		listeners[4] = scheduleController.new SaveListener();
 		listeners[5] = scheduleController.new WorkListener();
+		scheduleView.registerListeners(listeners);
 	}
 	class ScheduleController {
 		/**Controls all interactions between ScheduleView and WorkSchedule*/
@@ -80,6 +82,7 @@ public class Controller {
 			
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
+				Column.safeToChange(false); //temporary hack to fix add task bug
 				//Create the input window
 				JPanel inputPanel = new JPanel();
 				inputPanel.setLayout( new GridLayout( 0, 2 ));
@@ -95,16 +98,13 @@ public class Controller {
                 	String taskName = ((JTextField)inputPanel.getComponent(1)).getText();
                 	int taskLength = Integer.parseInt( ( (JTextField)inputPanel.getComponent(3) ).getText() );
                     workSchedule.addTask(taskName, taskLength, Column.getFocusedColumn()); //update the model
-                   // ((JTextField)inputPanel.getComponent(1)).setText(""); //resets both text fields to empty
-                   // ((JTextField)inputPanel.getComponent(3) ).setText( "" );
+                    Column.safeToChange(true); //temporary hack done, back to normal
                 }
               
             }
                 catch( NumberFormatException ex )
                 {
                     JOptionPane.showMessageDialog(null, "Error: Enter an integer for length");
-                   // ((JTextField)inputPanel.getComponent(1)).setText(""); //resets both text fields to 0
-                   // ((JTextField)inputPanel.getComponent(3) ).setText( "" );
                 }
 			}
 			

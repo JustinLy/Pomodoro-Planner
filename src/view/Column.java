@@ -24,6 +24,7 @@ public class Column extends JPanel implements Scrollable {
 	private int day;
 	private Color color;
 	private static int focusedColumn = 0; //Column being focused for adding tasks
+	private static boolean safeToChange = true; //A (hopefully) temporary hack to fix the AddTask bug.
 	
 	/**
 	 * Creates a new Column object for the specified day.
@@ -67,9 +68,11 @@ public class Column extends JPanel implements Scrollable {
 		label.addFocusListener( new FocusAdapter() {
 			public void focusLost( FocusEvent e ) {
 				//This terrible line of code un-highlights the JScrollPane
-				((JComponent) ( (JViewport)Column.this.getParent() ).getParent()).setBorder( BorderFactory.createLineBorder(Color.BLACK));
-				Column.focusedColumn = 0; //reset to default today
-				System.out.println( "reset to today");
+				if( safeToChange) {
+					((JComponent) ( (JViewport)Column.this.getParent() ).getParent()).setBorder( BorderFactory.createLineBorder(Color.BLACK));
+					Column.focusedColumn = 0; //reset to default today
+					System.out.println( "reset to today");
+				}
 			}
 			
 			public void focusGained( FocusEvent e ) {
@@ -82,7 +85,10 @@ public class Column extends JPanel implements Scrollable {
 
 	}
 	
-	
+	/**Temporary hack method to preserve the focusedColumn when AddTask is clicked. Stops FocusLost event during Task adding*/
+	public static void safeToChange( boolean answer) {
+		safeToChange = answer; 
+	}
 	
 	public JLabel getLabel() {
 		return label;

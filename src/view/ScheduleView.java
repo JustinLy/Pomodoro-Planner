@@ -73,15 +73,10 @@ public class ScheduleView implements Observer {
 	/**
 	 * Launch the application.
 	 */
-	
-
-	/**
-	 * Create the application.
-	 */
-	public static void main( String[] args ) {
-		ScheduleView blah = new ScheduleView();
-		blah.frame.pack();
-		blah.frame.setVisible(true);
+	public void run() {
+		
+		this.frame.pack();
+		this.frame.setVisible(true);
 	}
 	public ScheduleView() {
 		initialize();
@@ -122,11 +117,7 @@ public class ScheduleView implements Observer {
 		addButton = new JButton("+ Task");
 		addButton.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		addButton.setFocusable(false);
-		addButton.addActionListener(new ActionListener() {
-			public void actionPerformed( ActionEvent e ) {
-				System.out.println( "clicked");
-			}
-		});
+		
 		topHalf.add(addButton, "cell 0 7");
 		
 		workButton = new JButton("      Start Working     ");
@@ -220,7 +211,7 @@ public class ScheduleView implements Observer {
 			
 			for( int ind = 0; ind < 3; ind ++ ) { 
 				columns.get(ind).removeAll(); //Remove the old task list information from each column
-				columns.get(ind).add(new Space() ); //Add initial spaces to columns (to support inserting tasks at top of lists)
+				columns.get(ind).add(new Space(), "wrap" ); //Add initial spaces to columns (to support inserting tasks at top of lists)
 			}
 			
 			for( int ind1 = 0; ind1 < 3; ind1++ ) { //Iterate through all 3 tasklists
@@ -229,10 +220,12 @@ public class ScheduleView implements Observer {
 				
 				for( int ind2 = 0; ind2 < currentTaskList.size(); ind2++ ) { //Iterate through tasks in each list
 					Task currentTask = currentTaskList.get(ind2);
-					currentColumn.add( new TaskPanel( currentTask.getTaskName(), currentTask.getTaskLength())); //Add TaskPanel with currentTask's info
-					currentColumn.add(new Space()); //Add a Space placeholder after each TaskPanel
+					currentColumn.add( new TaskPanel( currentTask.getTaskName(), currentTask.getTaskLength()), "wrap, align center"); //Add TaskPanel with currentTask's info
+					currentColumn.add(new Space(), "wrap"); //Add a Space placeholder after each TaskPanel
 				}
 			}
+			frame.revalidate();
+			frame.repaint();
 		}
 	} 
 }
