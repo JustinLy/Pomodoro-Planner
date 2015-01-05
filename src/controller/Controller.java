@@ -1,21 +1,29 @@
 package controller;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Cursor;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ContainerAdapter;
 import java.awt.event.ContainerEvent;
 import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.util.EventListener;
 
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import controller.Controller.ScheduleController.EditTaskListener;
-import controller.Controller.ScheduleController.TaskMovementListener;
+import controller.Controller.ScheduleController.EditLengthListener;
+import controller.Controller.ScheduleController.EditNameListener;
+import controller.Controller.ScheduleController.MovementListener;
 import view.*;
 import model.*;
 public class Controller {
@@ -30,8 +38,9 @@ public class Controller {
 	
 	//Need a shared Listener for these across all components
 	ScheduleController scheduleController = new ScheduleController();
-	TaskMovementListener taskListener = scheduleController.new TaskMovementListener();
-	EditTaskListener editListener = scheduleController.new EditTaskListener();
+	MovementListener moveListener = scheduleController.new MovementListener();
+	EditNameListener nameListener = scheduleController.new EditNameListener();
+	EditLengthListener lengthListener = scheduleController.new EditLengthListener();
 	
 	
 	public Controller( ScheduleView scheduleView, WorkView workView,
@@ -64,17 +73,184 @@ public class Controller {
 			/**Adds TaskMovementListener, EditTaskListener, and DeleteTaskListener to new Tasks and Spaces added to the To-do lists */
 			@Override
 			public void componentAdded( ContainerEvent e ) {
+				if( !(e.getChild().getClass() == TaskPanel.class || 
+						e.getChild().getClass() == Space.class) ) //Sanity check: Should always be a JPanel anyways
+					throw new UnsupportedOperationException();
 				
-			}
+				JPanel newComp = (JPanel) e.getChild();
+				if( e.getChild().getClass() == TaskPanel.class ) {
+					newComp.addMouseListener( nameListener);
+					newComp.addKeyListener( nameListener ); //Need to register both types, because EditNameListener uses both
+					//Registering the EditLengthListener to the Length Textfield inside the Task
+					TaskPanel newTask = (TaskPanel) newComp;
+					newTask.getLengthField().addMouseListener(lengthListener); 
+					newTask.getLengthField().addKeyListener(lengthListener); //again, need to register both types of listeners	
+				}
+				
+				newComp.addMouseListener(moveListener); //Both Space and Task objects register the moveListener
+				newComp.addMouseMotionListener(moveListener); //Need to add mouse and mousemotion since taskListener uses both
+			} 
 		}
 		
-		class TaskMovementListener extends MouseAdapter implements MouseMotionListener {
+		class MovementListener extends MouseAdapter implements MouseMotionListener {
 			/**Handles user requests (from the view) to change the positions of Tasks in the To-do lists */
+			  private  boolean componentMoving = false;
+			    private  boolean canDrop = false;
+			    private  JComponent movingTask;
+			    private  JComponent targetComponent; //Could be a Task, Space or JLabel of a Column
+			    
+			    /**Identifies the Task being dragged and disables multiple tasks from being dragged at the same time*/
+			    public void mouseDragged( MouseEvent e ) {
+			    	//If mouse dragged on a "Task" itself or the JLabel inside the task
+			    	if( componentMoving == false) { //Only executes if no component is already being moved
+			    		
+			    		Object source = e.getSource();
+			    	
+				        if( source.getClass() == TaskPanel.class ) {//Mouse dragged on "Task" itself 
+				        		movingTask = (TaskPanel) source;
+				        		componentMoving = true;
+				        }
+				        else if( ( ( (JComponent)source).getParent() ).getClass() == TaskPanel.class){  //Mouse dragged on JLabel inside "Task"
+				        	movingTask = (TaskPanel) ((Component)source).getParent(); //Get the "Task" that the JLabel belongs to
+				        	componentMoving = true;
+				        }
+				        
+				        if( componentMoving) {
+				      		System.out.println( "moving"); //for testing
+				      		scheduleView.setMovingCursor(true);//Change cursor to indicate Task being dragged
+				        }
+			    	}
+			    }
+			    
+			    /**Identifies the targetComponent (or the destination) of the movingTask, and enables dropping */
+			    public void mouseEntered( MouseEvent e ) {
+			       //only records the component entered if instance of Task, Space or Column
+			        if( componentMoving ) {
+			        	if( e.getSource() instanceof Space )
+			        		System.out.println( "space" );
+			        	else if( e.getSource() instanceof TaskPanel )
+			        		System.out.println( "taskpanel");
+			        	canDrop = true; //Confirms that moving Task can be dropped on this Space or Column
+			            targetComponent = (JComponent) e.getSource();
+			            System.out.println( "can drop"); //for testing
+			        }
+			        else {
+			            canDrop = false;
+			            System.out.println( "can not drop");
+			        }
+			    }
+			    
+			    /**Sets canDrop to false and destroys the previously recorded targetComponent when exiting that movingComponent in the view */
+			    public void mouseExited( MouseEvent e ) {
+			    	canDrop = false;
+			    	targetComponent = null;
+			    }
+			    
+			    /**Moves the Task(s) in the appropriate manner (switch, insert, append) if the appropriate conditions are met 
+			     * (componentMoving and canDrop are true). 
+			     */
+			    public void mouseReleased( MouseEvent e ) {
+			    	if( componentMoving && canDrop ) { //Task being moved and component can be dropped on 
+			    		//Should refactor this. First 4 lines for Switch and Insert are the exact same....
+			    		if( targetComponent.getClass() == TaskPanel.class && targetComponent != movingTask ) { //Task switch
+			    			int position1 = getModelPosition(movingTask); //Convert the TaskPanel view position to a model position
+			    			int position2 = getModelPosition( targetComponent );
+			    			int day1 = ( (Column) movingTask.getParent() ).getDay(); //day that this Task is scheduled on
+			    			int day2 = ( (Column) targetComponent.getParent() ).getDay();
+			    			workSchedule.switchTasks(day1, position1, day2, position2); //Update model by making the switch
+			    		}
+			    		else if( targetComponent.getClass() == Space.class ) { //Inserting a Task into another position
+			    			int oldPosition = getModelPosition( movingTask );
+			    			int newPosition = getModelPosition( targetComponent );
+			    			int oldDay =  ( (Column) movingTask.getParent() ).getDay(); 
+			    			int newDay = ( (Column) targetComponent.getParent() ).getDay();
+			    			workSchedule.moveTask(oldDay, oldPosition, newDay, newPosition); //Move movingTask to new position in model
+			    		}
+			    		
+			    	}
+			        componentMoving = false; //Drag and drop operation complete
+			        canDrop = false;
+			        scheduleView.setMovingCursor(false);
+			    }
+			    
+			    /**
+			     * Converts a "TaskPanel" position or "Space" position (in the view) to an actual "Task" position in the Model.
+			     * Conversion is required because the View uses "Space" placeholders for task positions which are not present in the Model
+			     * @param viewComp - A TaskPanel or Space component from the View whose position you want to convert to a model position
+			     */
+			    public int getModelPosition( Object viewComp ) {
+			    	int viewPosition;
+			    	int modelPosition = 0;
+			    	Container parentColumn;
+			    			    	
+			    	if( !(viewComp instanceof JPanel) )  //sanity check
+			    		throw new IllegalArgumentException( "Error converting View position to Model");
+			    	
+			    	parentColumn =  ( ( (Container) viewComp).getParent());
+			    	if( viewComp.getClass() == Space.class ) 
+			    		viewPosition = 0; //Spaces are even, start at 0
+			    	else
+			    		viewPosition = 1; //TaskPanels are odd, start at 1
+			    	if( viewComp instanceof Space )
+			    		System.out.println( "space" );
+			    	else if( viewComp instanceof TaskPanel ) {
+			    		System.out.println( "TaskPanel");
+			    	}
+			    	while( viewPosition < parentColumn.getComponentCount() ) { //iterate through all parent Column's components till found
+			    		if( parentColumn.getComponent(viewPosition) == viewComp ) 
+			    			return modelPosition;
+			    		else {
+			    			viewPosition += 2; //Increment 2 because TaskPanels and Space alternates
+			    			modelPosition++; 
+			    		}
+			    	}
+			    	throw new IllegalStateException( "Error: Converting: viewComp not in its own container...");
+			    }
+		}
+		
+		class EditNameListener extends MouseAdapter implements KeyListener {
+
+			@Override
+			public void keyPressed(KeyEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void keyReleased(KeyEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void keyTyped(KeyEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+			/**Handles user requests (from the view) to edit the name of Tasks */
 			
 		}
 		
-		class EditTaskListener extends MouseAdapter {
-			/**Handles user requests (from the view) to edit the name of Tasks or their length */
+		class EditLengthListener extends MouseAdapter implements KeyListener {
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+			
+				
+			}
+
+			@Override
+			public void keyTyped(KeyEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			/**Handles user requests (from the view) to edit the length of tasks */
 		}
 		
 		class AddTaskListener implements ActionListener {
@@ -97,14 +273,17 @@ public class Controller {
                 {   
                 	String taskName = ((JTextField)inputPanel.getComponent(1)).getText();
                 	int taskLength = Integer.parseInt( ( (JTextField)inputPanel.getComponent(3) ).getText() );
+                	if( taskLength < 0 )
+                		throw new IllegalArgumentException();
                     workSchedule.addTask(taskName, taskLength, Column.getFocusedColumn()); //update the model
                     Column.safeToChange(true); //temporary hack done, back to normal
                 }
               
             }
-                catch( NumberFormatException ex )
+                catch( 
+                		IllegalArgumentException ex )
                 {
-                    JOptionPane.showMessageDialog(null, "Error: Enter an integer for length");
+                    JOptionPane.showMessageDialog(null, "Error: Enter a positive integer for length");
                 }
 			}
 			

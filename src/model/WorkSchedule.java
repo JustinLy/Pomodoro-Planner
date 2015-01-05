@@ -1,6 +1,7 @@
 package model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
@@ -75,6 +76,8 @@ public class WorkSchedule extends Observable {
 			Task movingTask = oldList.get(oldPosition);
 			oldList.remove(oldPosition); //Remove from original day's list
 			List<Task> newList = schedule.get(newDay);
+			if( newDay == oldDay && newPosition > oldPosition )  //Moving Task within same list
+				newPosition--; //Size of list went down by 1 when removed from original position
 			newList.add(newPosition, movingTask); //Add to new day's list at specified position
 			setChanged();
 			notifyObservers();
@@ -89,8 +92,12 @@ public class WorkSchedule extends Observable {
 	 * @param position2 - position in list of second task
 	 */
 	public void switchTasks( int day1, int position1, int day2, int position2 ) {
+		if( day1 == day2 ) //Can just use Collections switch if in same list 
+			Collections.swap(getTaskList(day1), position1, position2);
+		else {
 		moveTask( day1, position1, day2, position2 ); //Move task1 to  position of task2
 		moveTask( day2, position2+1, day1, position1 ); //Move task2 to position of task 1
+		}
 		setChanged();
 		notifyObservers();
 	}

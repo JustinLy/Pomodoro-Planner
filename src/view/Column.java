@@ -59,7 +59,7 @@ public class Column extends JPanel implements Scrollable {
 		
 		//Listener for focusing column when clicked
 		label.addMouseListener( new MouseAdapter() {
-			public void mouseClicked( MouseEvent e ) {
+			public void mousePressed( MouseEvent e ) {
 				label.requestFocusInWindow();
 			}
 		});

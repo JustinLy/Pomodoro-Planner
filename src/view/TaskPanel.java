@@ -11,7 +11,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
-class TaskPanel extends JPanel
+public class TaskPanel extends JPanel
 {
     /**
 	 * TaskPanels are used to display a "Task" from the model. Displays their name and length (and whether or not it's "complete")
@@ -31,7 +31,7 @@ class TaskPanel extends JPanel
         taskName.setAlignmentY(CENTER_ALIGNMENT);
         
         length = new JTextField(2);
-        length.setText("2");
+        length.setText(Integer.toString(duration));
         length.setAlignmentY(CENTER_ALIGNMENT);
         //NOTE: need to make editing TaskLength part of EditTaskListener. But how? JTextField is INSIDE the task (unless I make a getter)
         //Maybe 2 separate Listeners? EditTask and EditLength. Make public method in Task class that adds them
@@ -44,7 +44,7 @@ class TaskPanel extends JPanel
         
         //Highlights Task with same color as its Column when clicked and focuses it. (purely for aesthetics)
         addMouseListener( new MouseAdapter() {
-        	public void mouseClicked( MouseEvent e ) {
+        	public void mousePressed( MouseEvent e ) {
         		requestFocusInWindow();
         		setBorder(BorderFactory.createLineBorder( ( (Column)getParent() ).getColor() ) );
         	}
@@ -52,7 +52,7 @@ class TaskPanel extends JPanel
         
         //Sets the Task's border back to black when it loses focus (purely for aesthetics)
         addFocusListener( new FocusAdapter() {
-        	public void focusAdapter( FocusEvent e ) {
+        	public void focusLost( FocusEvent e ) {
         		setBorder(BorderFactory.createLineBorder(Color.BLACK));
         	}
         });

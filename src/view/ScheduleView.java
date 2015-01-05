@@ -1,5 +1,6 @@
 package view;
 
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridLayout;
@@ -227,5 +228,16 @@ public class ScheduleView implements Observer {
 			frame.revalidate();
 			frame.repaint();
 		}
-	} 
+	}
+	
+	/**
+	 * Toggles between default cursor and moving cursor (dragging tasks) 
+	 * @param moving - A boolean indicating whether the cursor should be MOVING CURSOR or not
+	 */
+	public void setMovingCursor(boolean moving ) {
+		if( moving )
+			frame.setCursor( Cursor.MOVE_CURSOR);
+		else
+			frame.setCursor(Cursor.DEFAULT_CURSOR);
+	}
 }

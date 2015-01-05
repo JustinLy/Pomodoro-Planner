@@ -25,7 +25,7 @@ public class Space extends JPanel {
 	       
 	     //Focuses space when clicked. Helps with giving users more areas to click on for defocusing when editing tasks, etc
 	        addMouseListener( new MouseAdapter() {
-	        	public void mouseClicked( MouseEvent e ) {
+	        	public void mousePressed( MouseEvent e ) {
 	        		requestFocusInWindow();
 	          	}
 	        });
