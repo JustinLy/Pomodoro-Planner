@@ -17,10 +17,11 @@ public class TaskPanel extends JPanel
 	 * TaskPanels are used to display a "Task" from the model. Displays their name and length (and whether or not it's "complete")
 	 */
 	private static final long serialVersionUID = 1L;
-	JLabel taskName;
-    JTextField length;
-     int size;
-     int day;
+	private JLabel taskName;
+    private JTextField length;
+    private int size;
+    private int day;
+    private boolean editable = true;
     
     public TaskPanel(String name, int duration )
     {
@@ -64,6 +65,20 @@ public class TaskPanel extends JPanel
      */
     public JTextField getLengthField() {
     	return length;
+    }
+    
+    /**
+     * Sets this TaskPanel to be "uneditable", so that its position and attributes cannot be changed by the user, except
+     * by deleting the TaskPanel.
+     */
+    public void setUneditable() {
+    	editable = false;
+    	//TODO: add the strike-through effect on this JLabel
+    }
+    
+    /**Returns true if this TaskPanel is editable, false otherwise */
+    public boolean isEditable() {
+    	return editable;
     }
     
     public Dimension getPreferredSize( )

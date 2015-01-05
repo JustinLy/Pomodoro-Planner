@@ -138,6 +138,33 @@ public class WorkSchedule extends Observable {
 		notifyObservers();
 	}
 	
+	/**
+	 * Edits the name of the specified Task
+	 * @param newName - new name you want to give to the Task
+	 * @param day - The day that the Task is scheduled on
+	 * @param position - Position of the Task in its tasklist
+	 */
+	public void editTaskName( String newName, int day, int position ) {
+		List<Task> taskList = schedule.get(day);
+		Task task = taskList.get(position);
+		task.setTaskName(newName);
+		setChanged();
+		notifyObservers();
+	}
+	/**
+	 * Edits the length of a task (in pomodoros)
+	 * @param newLength - new length of the task
+	 * @param day - day that Task is scheduled on
+	 * @param position - Position of the Task in its tasklist
+	 */
+	public void editTaskLength( int newLength, int day, int position) {
+		List<Task> taskList = schedule.get(day);
+		Task task = taskList.get(position);
+		task.setTaskLength(newLength);
+		setChanged();
+		notifyObservers();
+	}
+	
 	
 	
 	

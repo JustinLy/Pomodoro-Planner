@@ -221,7 +221,11 @@ public class ScheduleView implements Observer {
 				
 				for( int ind2 = 0; ind2 < currentTaskList.size(); ind2++ ) { //Iterate through tasks in each list
 					Task currentTask = currentTaskList.get(ind2);
-					currentColumn.add( new TaskPanel( currentTask.getTaskName(), currentTask.getTaskLength()), "wrap, align center"); //Add TaskPanel with currentTask's info
+					TaskPanel newPanel = new TaskPanel( currentTask.getTaskName(), currentTask.getTaskLength());
+					if( currentTask.isComplete() ) //Make TaskPanel uneditable if Task is complete
+						newPanel.setUneditable();
+					
+					currentColumn.add( newPanel, "wrap, align center"); //Add TaskPanel with currentTask's info
 					currentColumn.add(new Space(), "wrap"); //Add a Space placeholder after each TaskPanel
 				}
 			}

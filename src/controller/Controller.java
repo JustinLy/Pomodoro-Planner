@@ -2,11 +2,15 @@ package controller;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
+import java.awt.Event;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ContainerAdapter;
 import java.awt.event.ContainerEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -14,6 +18,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.util.EventListener;
+import java.util.EventObject;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -78,17 +83,24 @@ public class Controller {
 					throw new UnsupportedOperationException();
 				
 				JPanel newComp = (JPanel) e.getChild();
-				if( e.getChild().getClass() == TaskPanel.class ) {
+				TaskPanel newTask = null; //taskpanel if it is one
+				
+				if( newComp.getClass() == TaskPanel.class ) {
+					newTask = (TaskPanel) newComp;
+					if( newTask.isEditable() ) { //Only add both EditListeners to the taskpanel if it is editable
 					newComp.addMouseListener( nameListener);
 					newComp.addKeyListener( nameListener ); //Need to register both types, because EditNameListener uses both
 					//Registering the EditLengthListener to the Length Textfield inside the Task
-					TaskPanel newTask = (TaskPanel) newComp;
-					newTask.getLengthField().addMouseListener(lengthListener); 
-					newTask.getLengthField().addKeyListener(lengthListener); //again, need to register both types of listeners	
+					newTask.getLengthField().addActionListener(lengthListener); 
+					newTask.getLengthField().addFocusListener(lengthListener); //again, need to register both types of listeners	
+					}
+					newComp.addKeyListener(scheduleController.new DeleteTaskListener() ); //Add the DeleteTaskListener
 				}
 				
-				newComp.addMouseListener(moveListener); //Both Space and Task objects register the moveListener
-				newComp.addMouseMotionListener(moveListener); //Need to add mouse and mousemotion since taskListener uses both
+				if( newTask == null || newTask.isEditable()) { //Only register to Spaces and "editable" TaskPanels
+					newComp.addMouseListener(moveListener); 
+					newComp.addMouseMotionListener(moveListener); //Need to add mouse and mousemotion since taskListener uses both
+				}
 			} 
 		}
 		
@@ -173,43 +185,19 @@ public class Controller {
 			        scheduleView.setMovingCursor(false);
 			    }
 			    
-			    /**
-			     * Converts a "TaskPanel" position or "Space" position (in the view) to an actual "Task" position in the Model.
-			     * Conversion is required because the View uses "Space" placeholders for task positions which are not present in the Model
-			     * @param viewComp - A TaskPanel or Space component from the View whose position you want to convert to a model position
-			     */
-			    public int getModelPosition( Object viewComp ) {
-			    	int viewPosition;
-			    	int modelPosition = 0;
-			    	Container parentColumn;
-			    			    	
-			    	if( !(viewComp instanceof JPanel) )  //sanity check
-			    		throw new IllegalArgumentException( "Error converting View position to Model");
-			    	
-			    	parentColumn =  ( ( (Container) viewComp).getParent());
-			    	if( viewComp.getClass() == Space.class ) 
-			    		viewPosition = 0; //Spaces are even, start at 0
-			    	else
-			    		viewPosition = 1; //TaskPanels are odd, start at 1
-			    	if( viewComp instanceof Space )
-			    		System.out.println( "space" );
-			    	else if( viewComp instanceof TaskPanel ) {
-			    		System.out.println( "TaskPanel");
-			    	}
-			    	while( viewPosition < parentColumn.getComponentCount() ) { //iterate through all parent Column's components till found
-			    		if( parentColumn.getComponent(viewPosition) == viewComp ) 
-			    			return modelPosition;
-			    		else {
-			    			viewPosition += 2; //Increment 2 because TaskPanels and Space alternates
-			    			modelPosition++; 
-			    		}
-			    	}
-			    	throw new IllegalStateException( "Error: Converting: viewComp not in its own container...");
-			    }
+		
 		}
 		
 		class EditNameListener extends MouseAdapter implements KeyListener {
-
+			//TODO: Implement this
+			 	/*boolean editing = false; //indicates if a Task is being edited. Only one can be at a time
+			    TaskPanel editingTask; //Task being edited
+			    JTextField editField; //Field that will be used to edit tasks
+			    
+			    public void mouseClicked( MouseEvent e ) {
+			    	
+			    }*/
+			
 			@Override
 			public void keyPressed(KeyEvent arg0) {
 				// TODO Auto-generated method stub
@@ -231,26 +219,41 @@ public class Controller {
 			
 		}
 		
-		class EditLengthListener extends MouseAdapter implements KeyListener {
-
-			@Override
-			public void keyPressed(KeyEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public void keyReleased(KeyEvent e) {
-			
-				
-			}
-
-			@Override
-			public void keyTyped(KeyEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
+	
+		
+		class EditLengthListener extends FocusAdapter implements ActionListener {
 			/**Handles user requests (from the view) to edit the length of tasks */
+			/*TODO: Fix this so it doesn't do editLength(e) when actionPerformed fires
+			@Override
+			public void focusLost(FocusEvent e) {
+				editLength(e);
+			}/*/
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				editLength(e);
+			}
+			
+			/**Method to edit the length of a Task in the model and then update it in the TaskPanel of the View*/
+			private void editLength( EventObject e ) {
+				if( e.getSource().getClass() != JTextField.class) //sanity check
+					throw new IllegalStateException( "Error, edit length listener broken");
+				JTextField length = (JTextField) e.getSource();
+				TaskPanel taskPanel = (TaskPanel) length.getParent();
+				int day = ( (Column) taskPanel.getParent()).getDay(); //Get day that task belongs to
+				int position = getModelPosition(taskPanel); //Get the position of the Task represnted by taskPanel
+				
+				try {
+					int newLength = Integer.parseInt(length.getText()); 
+					if( newLength <= 0 )
+						throw new IllegalArgumentException();
+					workSchedule.editTaskLength(newLength, day, position); //Update the task length
+				}
+				catch( Exception ex ) { //Updates the view to show the old task length in the model, when user enters an invalid length
+					Task task = workSchedule.getTaskList(day).get(position); //Get the actual task in the model
+					workSchedule.editTaskLength(task.getTaskLength(), day, position); 
+				}
+			}
 		}
 		
 		class AddTaskListener implements ActionListener {
@@ -291,6 +294,14 @@ public class Controller {
 		
 		class DeleteTaskListener extends KeyAdapter {
 			/**Handles user requests (from the view) to delete a specified Task from a To-do list */
+			public void keyReleased( KeyEvent e ) { //TODO: Add JConfirmDialog to confirm deletion
+				if( e.getKeyCode() == KeyEvent.VK_DELETE) {
+					TaskPanel taskPanel = (TaskPanel) e.getSource();
+					int day = ( (Column) taskPanel.getParent() ).getDay();
+					int position = getModelPosition(taskPanel);
+					workSchedule.deleteTask(day, position); //Delete the task from the model and update view
+				}
+			}
 		}
 		
 		class SettingsListener implements ActionListener {
@@ -335,7 +346,39 @@ public class Controller {
 			}
 		}
 		
-		
+	    /**Helper method for several event listeners in this class including MovementListener and both Edit listeners.
+	     * Converts a "TaskPanel" position or "Space" position (in the view) to an actual "Task" position in the Model.
+	     * Conversion is required because the View uses "Space" placeholders for task positions which are not present in the Model
+	     * @param viewComp - A TaskPanel or Space component from the View whose position you want to convert to a model position
+	     */
+	    public int getModelPosition( Object viewComp ) {
+	    	int viewPosition;
+	    	int modelPosition = 0;
+	    	Container parentColumn;
+	    			    	
+	    	if( !(viewComp instanceof JPanel) )  //sanity check
+	    		throw new IllegalArgumentException( "Error converting View position to Model");
+	    	
+	    	parentColumn =  ( ( (Container) viewComp).getParent());
+	    	if( viewComp.getClass() == Space.class ) 
+	    		viewPosition = 0; //Spaces are even, start at 0
+	    	else
+	    		viewPosition = 1; //TaskPanels are odd, start at 1
+	    	if( viewComp instanceof Space )
+	    		System.out.println( "space" );
+	    	else if( viewComp instanceof TaskPanel ) {
+	    		System.out.println( "TaskPanel");
+	    	}
+	    	while( viewPosition < parentColumn.getComponentCount() ) { //iterate through all parent Column's components till found
+	    		if( parentColumn.getComponent(viewPosition) == viewComp ) 
+	    			return modelPosition;
+	    		else {
+	    			viewPosition += 2; //Increment 2 because TaskPanels and Space alternates
+	    			modelPosition++; 
+	    		}
+	    	}
+	    	throw new IllegalStateException( "Error: Converting: viewComp not in its own container...");
+	    }
 		
 		
 	}
