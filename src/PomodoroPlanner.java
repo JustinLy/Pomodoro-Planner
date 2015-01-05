@@ -13,6 +13,7 @@ public class PomodoroPlanner {
 		WorkView workView = new WorkView();
 		
 		workSchedule.addObserver(scheduleView); //register Observers to models
+		workSession.addObserver(workView);
 		
 		Controller controller = new Controller(  scheduleView, workView, workSchedule, workSession);
 		scheduleView.run();

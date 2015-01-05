@@ -12,7 +12,7 @@ public class Settings {
 		return pomLength;
 	}
 	public void setPomLength(int pomLength) {
-		this.pomLength = pomLength;
+		this.pomLength = pomLength*60000;
 	}
 	public int getPomsForLongBreak() {
 		return pomsForLongBreak;
@@ -24,12 +24,12 @@ public class Settings {
 		return shortBreak;
 	}
 	public void setShortBreak(int shortBreak) {
-		this.shortBreak = shortBreak;
+		this.shortBreak = shortBreak*60000;
 	}
 	public int getLongBreak() {
 		return longBreak;
 	}
 	public void setLongBreak(int longBreak) {
-		this.longBreak = longBreak;
+		this.longBreak = longBreak*60000;
 	}
 }

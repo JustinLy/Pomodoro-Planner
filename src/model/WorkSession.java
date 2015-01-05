@@ -77,6 +77,10 @@ public class WorkSession extends Observable {
 		return pomsCompleted;
 	}
 
+	public int getLongBreakCount() {
+		return longBreakCount;
+	}
+
 	public WorkState getState() {
 		return state;
 	}

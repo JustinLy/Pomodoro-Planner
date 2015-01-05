@@ -244,4 +244,9 @@ public class ScheduleView implements Observer {
 		else
 			frame.setCursor(Cursor.DEFAULT_CURSOR);
 	}
+	
+	/**Sets schedule view visibility, for when WorkView is on */
+	public void setVisible( boolean visible) {
+		frame.setVisible(visible);
+	}
 }

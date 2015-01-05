@@ -19,6 +19,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.util.EventListener;
 import java.util.EventObject;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -306,13 +308,37 @@ public class Controller {
 		
 		class SettingsListener implements ActionListener {
 			/**Handles user requests (from the view) to change the settings of the Pomodoro Planner */
+			//TODO: Display default values message dialog first pops up. TODO: Check for invalid input
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			
+				//Create the input window
+				JPanel inputPanel = new JPanel();
+				inputPanel.setLayout( new GridLayout( 0, 2 ));
+		        inputPanel.add( new JLabel( "Pomodoro Length (mins): "));
+		        inputPanel.add( new JTextField( 4));
+		        inputPanel.add( new JLabel( "Short Break (mins)"));
+		        inputPanel.add( new JTextField( 4 ));
+		        inputPanel.add( new JLabel( "Long Break (mins): "));
+		        inputPanel.add( new JTextField( 4 ));
+		        inputPanel.add( new JLabel( "Pomodoros till Long Break: "));
+		        inputPanel.add( new JTextField( 4 ));
+		        
+				int result = JOptionPane.showConfirmDialog( null, inputPanel, "Choose your settings", JOptionPane.OK_CANCEL_OPTION );
+                
+                if( result == JOptionPane.OK_OPTION  ) //Retrieve input and send it to the WorkSession model to update Settings
+                {   
+                	int pomLength = Integer.parseInt( ((JTextField)inputPanel.getComponent(1)).getText() );
+                	int shortBreak = Integer.parseInt( ( (JTextField)inputPanel.getComponent(3) ).getText() );
+                	int longBreak = Integer.parseInt( ( (JTextField)inputPanel.getComponent(5) ).getText() );
+                	int pomsTillBreak = Integer.parseInt( ( (JTextField)inputPanel.getComponent(7) ).getText() );
+                	Settings settings = workSession.getSettings();
+                	settings.setPomLength(pomLength);
+                	settings.setShortBreak(shortBreak);
+                	settings.setLongBreak(longBreak);
+                	settings.setPomsForLongBreak(pomsTillBreak);
+                	System.out.println( "success");
+                }
+			}		
 		}
 		
 		class completeDayListener implements ActionListener {
@@ -341,7 +367,17 @@ public class Controller {
 			/**Handles user request (from the view) to start working on the tasks */
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				// TODO Auto-generated method stub
+				Queue<Task> todoList = new LinkedList();
+				for(Task task : workSchedule.getTaskList(WorkSchedule.TODAY)) { //Add all unfinished tasks for Today's list to queue
+					if( !task.isComplete() )
+						todoList.add(task);
+				}
+				
+				scheduleView.setVisible(false); //hide the schedule view 
+				workSession.workOnTasks(todoList); //Start working on today's tasks
+				workView.run();
+				
+				
 				
 			}
 		}
