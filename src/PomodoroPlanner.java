@@ -18,5 +18,4 @@ public class PomodoroPlanner {
 		Controller controller = new Controller(  scheduleView, workView, workSchedule, workSession);
 		scheduleView.run();
 	}
-
 }
