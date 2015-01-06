@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class WorkSession extends Observable {
+	public static final int MESSAGEDELAY = 2000; //Duration of delay for TASKDONE and ALLDONE states (for giving user alerts)
 	
 	private Settings settings = new Settings(); //time parameters for pomodoro lengths, breaks, etc
 	private Queue<Task> taskList; //Tasks for today that still need to be completed
@@ -77,12 +78,31 @@ public class WorkSession extends Observable {
 		return pomsCompleted;
 	}
 
-	public int getLongBreakCount() {
-		return longBreakCount;
-	}
-
 	public WorkState getState() {
 		return state;
+	}
+	
+	/**
+	 * Returns the StateName of the current state. Used to identify this WorkSession's State without needing the state object itself.
+	 */
+	public StateName getStateName() {
+		return state.getName();
+	}
+	
+	/**
+	 * Get the number of pomodoros that need to be completed until the next Long Break
+	 */
+	public int getPomsTillLong() {
+		//Calculating Pomodoros till long break pomsTillBreak
+		
+		int temp = longBreakCount % settings.getLongBreak();
+		int pomsTillBreak ;
+		if( longBreakCount > settings.getLongBreak() ) //Need to use "temp" and formula if greater
+			pomsTillBreak = settings.getPomsForLongBreak() - temp;
+		else //If less, just subtract longBreakCount from poms needed for long break
+			pomsTillBreak = settings.getPomsForLongBreak() - longBreakCount;
+		
+		return pomsTillBreak;
 	}
 	
 	public enum StateName {
@@ -122,7 +142,6 @@ public class WorkSession extends Observable {
 			
 			if( pomsCompleted == currentTask.getTaskLength() ) { //Check if currentTask complete
 				state = new TaskDone( breakDuration );
-				state.complete(); //Instantly complete TaskDone to load new task
 			}
 			else
 				state = new Break( breakDuration );
@@ -155,7 +174,7 @@ public class WorkSession extends Observable {
 	}
 	
 	/**Alerts user that task is done and loads next task if possible. Upon completion, moves to AllDone or Break*/
-	class TaskDone implements WorkState {
+	class TaskDone extends TimeState implements WorkState {
 		
 		StateName name = StateName.TASKDONE;
 		int potentialBreak;
@@ -164,6 +183,7 @@ public class WorkSession extends Observable {
 		 * @param potentialBreak - The break time to set for the next Break state upon completion, if there are more tasks
 		 */
 		public TaskDone(int potentialBreak) {
+			super( MESSAGEDELAY );
 			this.potentialBreak = potentialBreak;
 		}
 
@@ -187,8 +207,12 @@ public class WorkSession extends Observable {
 	}
 	
 	/**All tasks on the Today list are complete. Stops working. Upon completion, assigns state to null */
-	class AllDone implements WorkState {
+	class AllDone extends TimeState implements WorkState {
 		
+		public AllDone() {
+			super(MESSAGEDELAY);
+		}
+
 		StateName name = StateName.ALLDONE;
 		public void complete() {
 			timer.stop();
@@ -201,12 +225,5 @@ public class WorkSession extends Observable {
 		public StateName getName() {
 			return name;
 		}
-	}
-	
-	/**
-	 * Returns the StateName of the current state
-	 */
-	public StateName getStateName() {
-		return state.getName();
 	}
 }

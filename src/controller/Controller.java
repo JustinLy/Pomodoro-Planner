@@ -6,6 +6,9 @@ import java.awt.Event;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.ContainerAdapter;
 import java.awt.event.ContainerEvent;
 import java.awt.event.FocusAdapter;
@@ -72,6 +75,7 @@ public class Controller {
 		listeners[4] = scheduleController.new SaveListener();
 		listeners[5] = scheduleController.new WorkListener();
 		scheduleView.registerListeners(listeners);
+		workView.registerReopenListener(scheduleController.new ReopenListener());
 	}
 	class ScheduleController {
 		/**Controls all interactions between ScheduleView and WorkSchedule*/
@@ -336,6 +340,8 @@ public class Controller {
                 	settings.setShortBreak(shortBreak);
                 	settings.setLongBreak(longBreak);
                 	settings.setPomsForLongBreak(pomsTillBreak);
+                	System.out.println( settings.getPomLength());
+                	System.out.println( settings.getShortBreak());
                 	System.out.println( "success");
                 }
 			}		
@@ -377,8 +383,15 @@ public class Controller {
 				workSession.workOnTasks(todoList); //Start working on today's tasks
 				workView.run();
 				
-				
-				
+			}
+		}
+		
+		class ReopenListener extends ComponentAdapter {
+			/**Handles user request (from WorkView) to re-open the ScheduleView and update it */
+			@Override
+			public void componentHidden( ComponentEvent e ) {
+				workSchedule.updateObservers(); //updates the schedule view
+				scheduleView.setVisible(true); //reopen schedule view
 			}
 		}
 		
@@ -400,11 +413,7 @@ public class Controller {
 	    		viewPosition = 0; //Spaces are even, start at 0
 	    	else
 	    		viewPosition = 1; //TaskPanels are odd, start at 1
-	    	if( viewComp instanceof Space )
-	    		System.out.println( "space" );
-	    	else if( viewComp instanceof TaskPanel ) {
-	    		System.out.println( "TaskPanel");
-	    	}
+	    	
 	    	while( viewPosition < parentColumn.getComponentCount() ) { //iterate through all parent Column's components till found
 	    		if( parentColumn.getComponent(viewPosition) == viewComp ) 
 	    			return modelPosition;

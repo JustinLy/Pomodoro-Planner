@@ -1,5 +1,7 @@
 package model;
 
+import java.util.concurrent.TimeUnit;
+
 public class Settings {
 	/**Time parameters for the pomodoro technique and the methods to use and modify them **/
 	
@@ -12,7 +14,7 @@ public class Settings {
 		return pomLength;
 	}
 	public void setPomLength(int pomLength) {
-		this.pomLength = pomLength*60000;
+		this.pomLength = (int)TimeUnit.MINUTES.toMillis(pomLength);
 	}
 	public int getPomsForLongBreak() {
 		return pomsForLongBreak;
@@ -24,12 +26,12 @@ public class Settings {
 		return shortBreak;
 	}
 	public void setShortBreak(int shortBreak) {
-		this.shortBreak = shortBreak*60000;
+		this.shortBreak = (int)TimeUnit.MINUTES.toMillis(shortBreak);
 	}
 	public int getLongBreak() {
 		return longBreak;
 	}
 	public void setLongBreak(int longBreak) {
-		this.longBreak = longBreak*60000;
+		this.longBreak = (int)TimeUnit.MINUTES.toMillis(longBreak);
 	}
 }

@@ -28,8 +28,7 @@ public class WorkSchedule extends Observable {
 	 */
 	public WorkSchedule( WorkSchedule previousSchedule ) {
 		this.schedule = previousSchedule.schedule;
-		setChanged();
-		notifyObservers();
+		updateObservers();
 		}
 	
 	/**
@@ -56,8 +55,7 @@ public class WorkSchedule extends Observable {
 			throw new IllegalArgumentException( "Error: Must input TODAY, TOMORROW, OR DAY_AFTER" );
 		else {
 			schedule.get(day).add( new Task(taskName, taskLength));
-			setChanged();
-			notifyObservers();
+			updateObservers();
 		}
 	}
 	
@@ -79,8 +77,7 @@ public class WorkSchedule extends Observable {
 			if( newDay == oldDay && newPosition > oldPosition )  //Moving Task within same list
 				newPosition--; //Size of list went down by 1 when removed from original position
 			newList.add(newPosition, movingTask); //Add to new day's list at specified position
-			setChanged();
-			notifyObservers();
+			updateObservers();
 		}
 	}
 	
@@ -98,8 +95,7 @@ public class WorkSchedule extends Observable {
 		moveTask( day1, position1, day2, position2 ); //Move task1 to  position of task2
 		moveTask( day2, position2+1, day1, position1 ); //Move task2 to position of task 1
 		}
-		setChanged();
-		notifyObservers();
+		updateObservers();
 	}
 	
 	/**
@@ -112,8 +108,7 @@ public class WorkSchedule extends Observable {
 			throw new IllegalArgumentException("Error: Invalid day or position\n" );
 		else {
 			schedule.get(day).remove(position);
-			setChanged();
-			notifyObservers();
+			updateObservers();
 		}
 	}
 	
@@ -134,8 +129,7 @@ public class WorkSchedule extends Observable {
 		tomorrow.clear();
 		tomorrow.addAll(dayAfter); //Move all of DAY_AFTER's tasks to tomorrow
 		dayAfter.clear(); 
-		setChanged();
-		notifyObservers();
+		updateObservers();
 	}
 	
 	/**
@@ -148,8 +142,7 @@ public class WorkSchedule extends Observable {
 		List<Task> taskList = schedule.get(day);
 		Task task = taskList.get(position);
 		task.setTaskName(newName);
-		setChanged();
-		notifyObservers();
+		updateObservers();
 	}
 	/**
 	 * Edits the length of a task (in pomodoros)
@@ -161,11 +154,14 @@ public class WorkSchedule extends Observable {
 		List<Task> taskList = schedule.get(day);
 		Task task = taskList.get(position);
 		task.setTaskLength(newLength);
+		updateObservers();
+	}
+	
+	/**Updates the Observers attached to this Observable object*/
+	public void updateObservers() {
 		setChanged();
 		notifyObservers();
 	}
-	
-	
 	
 	
 	

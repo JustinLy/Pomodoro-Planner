@@ -19,10 +19,10 @@ public class TestWorkSession {
 		tasks.add( new Task( "do stuff", 1));
 		
 		//configure settings to make it easier for testing
-		work.getSettings().setPomLength(20*1000);
-		work.getSettings().setShortBreak(5*1000);
-		work.getSettings().setLongBreak(10*1000);
-		work.getSettings().setPomsForLongBreak(2);
+		work.getSettings().setPomLength(1);
+		work.getSettings().setShortBreak(1);
+		work.getSettings().setLongBreak(2);
+		work.getSettings().setPomsForLongBreak(3);
 		
 		TestObserver obs = new TestObserver();
 		work.addObserver(obs);
@@ -55,12 +55,16 @@ public class TestWorkSession {
 				TimeState state = (TimeState) work.getState();
 				System.out.println( work.getCurrentTask().getTaskName() + "\t");
 				System.out.println( state.getMinutes() + ":" + state.getSeconds() + "\t");
-				if( state.getOriginalTime() == settings.getPomLength() ) 
+				
+				if(work.getStateName() == WorkSession.StateName.POMODORO ) 
 					System.out.println( "Pomodoro" + "\t" );
-				else if( state.getOriginalTime() == settings.getShortBreak() )
-					System.out.println( "Short" + "\t" );
-				else if( state.getOriginalTime() == settings.getLongBreak() )
-					System.out.println( "Long" + "\t" );
+				
+				else if( work.getStateName() == WorkSession.StateName.BREAK ) {
+					if( state.getOriginalTime() == settings.getShortBreak())
+						System.out.println( "Short" + "\t" );
+					else if( state.getOriginalTime() == settings.getLongBreak() )
+						System.out.println( "Long" + "\t" );
+				}
 				System.out.println( "\n");
 				}
 				if( work.getStateName() == WorkSession.StateName.TASKDONE) 
