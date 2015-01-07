@@ -9,7 +9,7 @@ public class testdb {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		ObjectContainer db = Db4oEmbedded.openFile(Db4oEmbedded
-				 .newConfiguration(), "tunak4o");
+				 .newConfiguration(), "pomodorodata");
 		List<List<String>> blah = new ArrayList<List<String>>();
 		List<String> today = new ArrayList<String>();
 		today.add("Kill Gupta");

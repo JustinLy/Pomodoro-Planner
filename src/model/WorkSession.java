@@ -19,7 +19,6 @@ public class WorkSession extends Observable {
 	private WorkState state; //current state of the WorkSession
 	private Timer timer = null; //timer to time the current pomodoro or break
 
-	
 	/**
 	 * Works on the given task list using the Pomodoro Technique continuously until
 	 * "pause" is set by the user or all tasks in the list have been completed.
@@ -34,7 +33,8 @@ public class WorkSession extends Observable {
 			if( state == null || state.getName() != StateName.BREAK ) //Defaults to Pomodoro state if not resuming from Break
 				state = new Pomodoro( settings.getPomLength() );
 		}
-		setChanged();
+		taskList.remove(); //We know the task on top of queue is same as currentTask, so remove the duplicate
+		setChanged(); //Updating observers right away to prevent displaying old information
 		notifyObservers();
 		timer = new Timer( 1000, new ActionListener() {
 			public void actionPerformed(ActionEvent e ) {
@@ -65,6 +65,8 @@ public class WorkSession extends Observable {
 		if( state != null && state instanceof TimeState ) { //Sanity check. Is only called when its a TimeState anyways.
 			TimeState currentTime = (TimeState) state;
 			currentTime.reset();
+			setChanged();
+			notifyObservers(); //Instantly update the reset time to Observers
 		}
 	}
 	
@@ -82,6 +84,13 @@ public class WorkSession extends Observable {
 
 	public WorkState getState() {
 		return state;
+	}
+	
+	/**
+	 * Returns true if this WorkSession's current state is about to change, false otherwise
+	 */
+	public boolean stateChanging() {
+		return state.isChanging();
 	}
 	
 	/**
@@ -117,6 +126,7 @@ public class WorkSession extends Observable {
 		 * for the next state, and then switches to the next state.
 		 */
 		public void complete();
+		public boolean isChanging(); //Returns true if this state is about to change to another state
 		public StateName getName();
 	}
 	
@@ -152,6 +162,11 @@ public class WorkSession extends Observable {
 		public StateName getName() {
 			return name;
 		}
+
+		@Override
+		public boolean isChanging() {
+			return getMillis() == 0;
+		}
 	}
 	
 	/**Taking a break. Upon completion, will move to Pomodoro */
@@ -172,6 +187,11 @@ public class WorkSession extends Observable {
 
 		public StateName getName() {
 			return name;
+		}
+		
+		@Override
+		public boolean isChanging() {
+			return getMillis() == 0;
 		}
 	}
 	
@@ -205,6 +225,11 @@ public class WorkSession extends Observable {
 		public StateName getName() {
 			return name;
 		}
+		
+		@Override
+		public boolean isChanging() {
+			return getMillis() == MESSAGEDELAY;
+		}
 	}
 	
 	/**All tasks on the Today list are complete. Stops working. Upon completion, assigns state to null */
@@ -225,6 +250,11 @@ public class WorkSession extends Observable {
 		
 		public StateName getName() {
 			return name;
+		}
+		
+		@Override
+		public boolean isChanging() {
+			return getMillis() == 0;
 		}
 	}
 }

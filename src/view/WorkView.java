@@ -3,7 +3,9 @@ package view;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentListener;
+import java.util.EventListener;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -20,6 +22,7 @@ import model.TimeState;
 import model.WorkSession;
 import model.WorkSession.StateName;
 import net.miginfocom.swing.MigLayout;
+
 import java.awt.Color;
 
 public class WorkView implements Observer {
@@ -121,10 +124,6 @@ public void run() {
 				progress.setText(session.getPomsCompleted() +  " / " + task.getTaskLength() + " Pomodoros Completed" );
 				currentTime.setText(taskTime.toString());
 				pomsTillLongBreak.setText(session.getPomsTillLong() + " more till Long Break");
-				
-				if( taskTime.getMillis() == 0 )
-					frame.toFront(); //Make window pop up to notify user
-				
 				break;
 				
 			case BREAK :
@@ -137,9 +136,6 @@ public void run() {
 					currentTask.setText( "Long Break" );
 				else
 					currentTask.setText( "Short Break" );
-				
-				if( breakTime.getMillis() == 0 )
-					frame.toFront(); //Make window pop up to notify user
 				break;
 				
 			case TASKDONE:
@@ -148,24 +144,22 @@ public void run() {
 				pomsTillLongBreak.setText(BLANKSPACE); //Nothing to display
 				currentTask.setText( task.getTaskName() + " Complete");
 				TimeState taskMsgTime = (TimeState) session.getState(); //test
-				
-				if( taskMsgTime.getMillis() == WorkSession.MESSAGEDELAY )
-					frame.toFront(); //Make window pop up to notify user
 				break;
 				
 			case ALLDONE:
 				setIsMessage(true);
 				currentTask.setText( "All Tasks Today Completed!");
-				TimeState doneMsgTime = (TimeState) session.getState();
-				
-				if( doneMsgTime.getMillis() == WorkSession.MESSAGEDELAY ) 
-					frame.toFront(); //Make window pop up to notify user
-				else if( doneMsgTime.getMillis() == 0 ) //After 2 seconds dispose of message and return to schedule view
-					frame.setVisible(false); //Hide the WorkView
 				break;
 				
 			default: break;
 			}
+			
+			if( session.stateChanging()) { //Make window up up to alert users when changing states (ie from Pomodoro to Break)
+				frame.toFront();
+				if( state == WorkSession.StateName.ALLDONE)
+					frame.setVisible(false); //Hide the WorkView, trigger listener to return to ScheduleView
+			}
+			
 			frame.revalidate();
 			frame.repaint();	
 		}
@@ -181,6 +175,14 @@ public void run() {
 	 */
 	public void registerReopenListener(ComponentListener listener) {
 		frame.addComponentListener(listener);
+	}
+	
+	/**
+	 * Adds ALL the required EventListeners from the WorkController to the components in this WorkView
+	 */
+	public void registerWorkListeners( EventListener[] listeners) {
+		pauseButton.addActionListener((ActionListener) listeners[0]);
+		resetButton.addActionListener((ActionListener) listeners[1]);
 	}
 	
 	/**Helper method to hide buttons and unneeded labels during Task Completion and Todo-list Completion messages*/

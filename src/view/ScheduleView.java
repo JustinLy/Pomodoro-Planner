@@ -69,6 +69,7 @@ public class ScheduleView implements Observer {
 	Column tomorrowColumn;
 	Column dayAfterColumn;
 	List<Column> columns = new ArrayList<Column>();
+	private JLabel pausedTaskLabel;
 	
 
 	/**
@@ -96,7 +97,7 @@ public class ScheduleView implements Observer {
 		/**Top half of the ScheduleView. Contains most of the buttons*/
 		JPanel topHalf = new JPanel();
 		frame.getContentPane().add(topHalf, "cell 0 0,grow");
-		topHalf.setLayout(new MigLayout("", "[][push,grow][][push,grow][]", "[growprio 0][][][][][][][]"));
+		topHalf.setLayout(new MigLayout("", "[][push,grow][][push,grow][]", "[growprio 0][][][][][][][][]"));
 		
 		settingsButton = new JButton("Settings");
 		settingsButton.setVerticalTextPosition(SwingConstants.BOTTOM);
@@ -115,23 +116,26 @@ public class ScheduleView implements Observer {
 		saveButton.setHorizontalTextPosition(SwingConstants.CENTER);
 		topHalf.add(saveButton, "cell 4 0,alignx right,aligny top");
 		
+		pausedTaskLabel = new JLabel("");
+		topHalf.add(pausedTaskLabel, "cell 2 3,alignx center");
+		
 		addButton = new JButton("+ Task");
 		addButton.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		addButton.setFocusable(false);
 		
-		topHalf.add(addButton, "cell 0 7");
+		topHalf.add(addButton, "cell 0 8");
 		
 		workButton = new JButton("      Start Working     ");
 		workButton.setBackground(Color.GREEN);
 		workButton.setContentAreaFilled(false);
 		workButton.setOpaque(true);
 		workButton.setBorder(BorderFactory.createLineBorder(Color.blue));
-		topHalf.add(workButton, "cell 2 7,alignx center");
+		topHalf.add(workButton, "cell 2 8,alignx center");
 		
 		completeButton = new JButton("<html>Complete<br />Day</html>");
 		completeButton.setVerticalTextPosition(SwingConstants.BOTTOM);
 		completeButton.setHorizontalTextPosition(SwingConstants.CENTER);
-		topHalf.add(completeButton, "cell 4 7, alignx right, aligny top");
+		topHalf.add(completeButton, "cell 4 8,alignx right,aligny top");
 		
 		/**Bottom half of the ScheduleView. Contains the schedule*/
 		

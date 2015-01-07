@@ -24,12 +24,17 @@ import java.util.EventListener;
 import java.util.EventObject;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+
+import com.db4o.Db4oEmbedded;
+import com.db4o.ObjectContainer;
+import com.db4o.ObjectSet;
 
 import controller.Controller.ScheduleController.EditLengthListener;
 import controller.Controller.ScheduleController.EditNameListener;
@@ -77,6 +82,9 @@ public class Controller {
 		scheduleView.registerListeners(listeners);
 		workView.registerReopenListener(scheduleController.new ReopenListener());
 	}
+	
+
+    
 	class ScheduleController {
 		/**Controls all interactions between ScheduleView and WorkSchedule*/
 		
@@ -312,20 +320,22 @@ public class Controller {
 		
 		class SettingsListener implements ActionListener {
 			/**Handles user requests (from the view) to change the settings of the Pomodoro Planner */
-			//TODO: Display default values message dialog first pops up. TODO: Check for invalid input
+			JPanel inputPanel = new JPanel();
+			//TODO: Check for invalid input
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				//Create the input window
-				JPanel inputPanel = new JPanel();
+				Settings settings = workSession.getSettings(); //Get current settings to display them
+				//Create the input window, and display current settings
 				inputPanel.setLayout( new GridLayout( 0, 2 ));
-		        inputPanel.add( new JLabel( "Pomodoro Length (mins): "));
-		        inputPanel.add( new JTextField( 4));
+				inputPanel.removeAll(); //Clear old components
+		        inputPanel.add( new JLabel( "Pomodoro Length (mins): " ));
+		        inputPanel.add( new JTextField(""+TimeUnit.MILLISECONDS.toMinutes(settings.getPomLength()), 4));
 		        inputPanel.add( new JLabel( "Short Break (mins)"));
-		        inputPanel.add( new JTextField( 4 ));
+		        inputPanel.add( new JTextField(""+TimeUnit.MILLISECONDS.toMinutes(settings.getShortBreak()), 4 ));
 		        inputPanel.add( new JLabel( "Long Break (mins): "));
-		        inputPanel.add( new JTextField( 4 ));
+		        inputPanel.add( new JTextField( ""+TimeUnit.MILLISECONDS.toMinutes(settings.getLongBreak()), 4 ));
 		        inputPanel.add( new JLabel( "Pomodoros till Long Break: "));
-		        inputPanel.add( new JTextField( 4 ));
+		        inputPanel.add( new JTextField( ""+settings.getPomsForLongBreak(),4 ));
 		        
 				int result = JOptionPane.showConfirmDialog( null, inputPanel, "Choose your settings", JOptionPane.OK_CANCEL_OPTION );
                 
@@ -335,14 +345,12 @@ public class Controller {
                 	int shortBreak = Integer.parseInt( ( (JTextField)inputPanel.getComponent(3) ).getText() );
                 	int longBreak = Integer.parseInt( ( (JTextField)inputPanel.getComponent(5) ).getText() );
                 	int pomsTillBreak = Integer.parseInt( ( (JTextField)inputPanel.getComponent(7) ).getText() );
-                	Settings settings = workSession.getSettings();
-                	settings.setPomLength(pomLength);
-                	settings.setShortBreak(shortBreak);
-                	settings.setLongBreak(longBreak);
-                	settings.setPomsForLongBreak(pomsTillBreak);
-                	System.out.println( settings.getPomLength());
-                	System.out.println( settings.getShortBreak());
-                	System.out.println( "success");
+                	
+                	Settings newSettings = workSession.getSettings(); //Update the new settings in the model
+                	newSettings.setPomLength(pomLength);
+                	newSettings.setShortBreak(shortBreak);
+                	newSettings.setLongBreak(longBreak);
+                	newSettings.setPomsForLongBreak(pomsTillBreak);
                 }
 			}		
 		}
@@ -363,12 +371,28 @@ public class Controller {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				// TODO Auto-generated method stub
+				ObjectContainer data = Db4oEmbedded.openFile(Db4oEmbedded
+						 .newConfiguration(), "pomodorodata"); //Open the data file
+				int confirm = JOptionPane.showConfirmDialog (null, "Saving will overwrite current data. Continue?","Warning",JOptionPane.YES_NO_OPTION);
 				
-			}
+				if( confirm == JOptionPane.YES_OPTION) {
+					try { //Delete old data 
+							ObjectSet result= data.queryByExample(new Object());
+							while(result.hasNext()) 
+							 data.delete(result.next());
+							
+							data.store(workSchedule); //Store both models
+							data.store(workSession);
+							JOptionPane.showMessageDialog(null, "Schedule and progress saved!");
+					}
+					finally {
+								 data.close();
+								}
+				}
 			
+			}
 		}
-		
+
 		class WorkListener implements ActionListener {
 			/**Handles user request (from the view) to start working on the tasks */
 			@Override
@@ -379,10 +403,13 @@ public class Controller {
 						todoList.add(task);
 				}
 				
+				if( todoList.isEmpty()) //Check if there are no tasks to complete in TODAY list
+					JOptionPane.showMessageDialog(null, "Error: Need at least 1 incomplete task in \"TODAY\" List");
+				else {
 				scheduleView.setVisible(false); //hide the schedule view 
 				workSession.workOnTasks(todoList); //Start working on today's tasks
 				workView.run();
-				
+				}
 			}
 		}
 		
@@ -424,6 +451,8 @@ public class Controller {
 	    	}
 	    	throw new IllegalStateException( "Error: Converting: viewComp not in its own container...");
 	    }
+	    
+
 		
 		
 	}
