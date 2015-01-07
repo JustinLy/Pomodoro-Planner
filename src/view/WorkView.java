@@ -20,6 +20,7 @@ import model.TimeState;
 import model.WorkSession;
 import model.WorkSession.StateName;
 import net.miginfocom.swing.MigLayout;
+import java.awt.Color;
 
 public class WorkView implements Observer {
 
@@ -69,7 +70,7 @@ public void run() {
 		frame.setBounds(100, 100, 493, 248);
 	//	frame.setPreferredSize(new Dimension(650, 450));
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.getContentPane().setLayout(new MigLayout("", "[][][][][][][grow][][][][]", "[][][][][][][]") );
+		frame.getContentPane().setLayout(new MigLayout("", "[][][][grow][][grow][grow][][][grow][]", "[grow][grow][grow][grow][grow][grow][grow]") );
 		
 		//Task Name
 		currentTask.setText("Tunak tunak tun");
@@ -80,7 +81,11 @@ public void run() {
 		
 		progress.setText("4 / 5 Pomodoros Completed");
 		frame.getContentPane().add(progress, "cell 6 2,alignx center");
+		resetButton.setFont(new Font("Tahoma", Font.BOLD, 11));
 		
+		resetButton.setBackground(Color.GREEN);
+		resetButton.setContentAreaFilled(false);
+		resetButton.setOpaque(true);
 		frame.getContentPane().add(resetButton, "flowx,cell 3 4");
 		
 		currentTime.setText("23:00");
@@ -91,6 +96,10 @@ public void run() {
 		
 		pomsTillLongBreak.setText("3 / 5 till Long Break");
 		frame.getContentPane().add(pomsTillLongBreak, "cell 9 4");
+		pauseButton.setFont(new Font("Tahoma", Font.BOLD, 11));
+		pauseButton.setBackground(Color.RED);
+		pauseButton.setContentAreaFilled(false);
+		pauseButton.setOpaque(true);
 		frame.getContentPane().add( pauseButton, "cell 6 6");
 	}
 	
@@ -103,7 +112,7 @@ public void run() {
 			WorkSession session = (WorkSession) arg0;
 			StateName state = session.getStateName();
 			Task task = session.getCurrentTask();
-			
+		
 			switch( state ) { //Displays information on screen depending on the model's State
 			case POMODORO: 
 				setIsMessage(false); //Not a message;
@@ -116,8 +125,6 @@ public void run() {
 				if( taskTime.getMillis() == 0 )
 					frame.toFront(); //Make window pop up to notify user
 				
-				frame.revalidate();
-				frame.repaint();
 				break;
 				
 			case BREAK :
@@ -133,9 +140,6 @@ public void run() {
 				
 				if( breakTime.getMillis() == 0 )
 					frame.toFront(); //Make window pop up to notify user
-				
-				frame.revalidate();
-				frame.repaint();
 				break;
 				
 			case TASKDONE:
@@ -143,46 +147,28 @@ public void run() {
 				progress.setText(BLANKSPACE); //Nothing to display 
 				pomsTillLongBreak.setText(BLANKSPACE); //Nothing to display
 				currentTask.setText( task.getTaskName() + " Complete");
-				TimeState doneTime = (TimeState) session.getState(); //test
+				TimeState taskMsgTime = (TimeState) session.getState(); //test
 				
-				if( doneTime.getMillis() == WorkSession.MESSAGEDELAY )
+				if( taskMsgTime.getMillis() == WorkSession.MESSAGEDELAY )
 					frame.toFront(); //Make window pop up to notify user
-				
-				frame.toFront(); //Make window pop up to notify user
-				frame.revalidate();
-				frame.repaint();
-				/*try {
-					Thread.sleep(1000); //Pauses for 1 second so user can see the "Task Complete" message
-				} catch (InterruptedException e1) {
-					System.out.println( "Error: TASKDONE"); //TODO: replace with error dialog later.
-				} */
 				break;
 				
 			case ALLDONE:
 				setIsMessage(true);
-				JOptionPane pane = new JOptionPane("All tasks for today complete!", JOptionPane.INFORMATION_MESSAGE, JOptionPane.DEFAULT_OPTION, null, new Object[]{}); 
-				JDialog doneMessage = pane.createDialog("Done");
-				doneMessage.toFront();
-				frame.revalidate();
-				frame.repaint();
-				/*try {
-					Thread.sleep(2000); //Pause for 2 seconds so user can see the message
-				} catch (InterruptedException e) {
-					System.out.println( "Error: ALLDONE"); //TODO: replace with error dialog later
-				} */
-				doneMessage.dispose(); //Get rid of the message
-				frame.setVisible(false); //Hide the WorkView
+				currentTask.setText( "All Tasks Today Completed!");
+				TimeState doneMsgTime = (TimeState) session.getState();
+				
+				if( doneMsgTime.getMillis() == WorkSession.MESSAGEDELAY ) 
+					frame.toFront(); //Make window pop up to notify user
+				else if( doneMsgTime.getMillis() == 0 ) //After 2 seconds dispose of message and return to schedule view
+					frame.setVisible(false); //Hide the WorkView
 				break;
 				
 			default: break;
 			}
-		
-			
-
-			
-			
+			frame.revalidate();
+			frame.repaint();	
 		}
-		
 	}
 	
 	/**Sets schedule view visibility, for when WorkView is on */

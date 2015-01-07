@@ -34,6 +34,8 @@ public class WorkSession extends Observable {
 			if( state == null || state.getName() != StateName.BREAK ) //Defaults to Pomodoro state if not resuming from Break
 				state = new Pomodoro( settings.getPomLength() );
 		}
+		setChanged();
+		notifyObservers();
 		timer = new Timer( 1000, new ActionListener() {
 			public void actionPerformed(ActionEvent e ) {
 				TimeState currentTime = null;
@@ -197,7 +199,6 @@ public class WorkSession extends Observable {
 				state = new Break(potentialBreak);
 			else {
 				state = new AllDone(); 
-				state.complete(); //Instantly carry out AllDone's procedures
 			}
 		}
 
