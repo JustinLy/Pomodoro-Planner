@@ -37,7 +37,7 @@ public class WorkSession extends Observable {
 			if( sessionData.hasNext() ) { //Retrieve the WorkSession 
 				WorkSession oldSession = (WorkSession) sessionData.next();
 				oldSession.deleteObservers();
-				System.out.println(( (TimeState)oldSession.getState() ).toString() );
+				//System.out.println(( (TimeState)oldSession.getState() ).toString() );
 				return oldSession; 
 			}
 			else
@@ -122,7 +122,6 @@ public class WorkSession extends Observable {
 			 data.delete(result.next());
 			
 			data.store(this); //Store this worksession
-			System.out.println("yo");
 	}
 	finally {
 				 data.close();
@@ -303,7 +302,7 @@ public class WorkSession extends Observable {
 			setChanged();
 			notifyObservers();
 			currentTask = null;
-			state = null; //reset state to null for when user starts a new Today list
+			//state = null; //reset state to null for when user starts a new Today list
 		}
 		
 		public StateName getName() {

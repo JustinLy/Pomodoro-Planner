@@ -9,8 +9,8 @@ import view.WorkView;
 
 public class WorkController {
 /**This class is responsible for processing user interactions between the WorkView and the WorkSession model */
-	WorkView workView;
-	WorkSession workSession;
+	private WorkView workView;
+	private WorkSession workSession;
 	public WorkController( WorkView workView, WorkSession workSession ) {
 		this.workView = workView;
 		this.workSession = workSession;

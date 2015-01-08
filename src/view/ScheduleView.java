@@ -59,16 +59,16 @@ import model.Task;
 
 public class ScheduleView implements Observer {
 	private JFrame frame;
-	JButton settingsButton;
-	JButton addButton;
-	JButton workButton;
-	JButton saveButton;
-	JButton completeButton;
+	private JButton settingsButton;
+	private JButton addButton;
+	private JButton workButton;
+	private JButton saveButton;
+	private JButton completeButton;
 	
-	Column todayColumn;
-	Column tomorrowColumn;
-	Column dayAfterColumn;
-	List<Column> columns = new ArrayList<Column>();
+	private Column todayColumn;
+	private Column tomorrowColumn;
+	private Column dayAfterColumn;
+	private List<Column> columns = new ArrayList<Column>();
 	private JLabel pausedTaskLabel;
 	
 

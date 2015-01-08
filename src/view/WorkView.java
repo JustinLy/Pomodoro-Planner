@@ -28,14 +28,14 @@ import java.awt.Color;
 
 public class WorkView implements Observer {
 
-	final String BLANKSPACE = ("________________");
+	private final String BLANKSPACE = ("________________");
 	private FocusFrame frame;
-	JLabel currentTask = new JLabel();
-	JLabel progress = new JLabel();
-	JButton resetButton = new JButton("Reset");
-	JLabel currentTime = new JLabel();
-	JLabel pomsTillLongBreak = new JLabel();
-	JButton pauseButton = new JButton("Pause / Return to Schedule Window");
+	private JLabel currentTask = new JLabel();
+	private JLabel progress = new JLabel();
+	private JButton resetButton = new JButton("Reset");
+	private JLabel currentTime = new JLabel();
+	private JLabel pomsTillLongBreak = new JLabel();
+	private JButton pauseButton = new JButton("Pause / Return to Schedule Window");
 
 	/**
 	 * Launch the application.

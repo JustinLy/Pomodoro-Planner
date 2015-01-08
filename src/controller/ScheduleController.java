@@ -43,17 +43,17 @@ import model.*;
 public class ScheduleController {
 
 	//View references
-	ScheduleView scheduleView;
-	WorkView workView;
+	private ScheduleView scheduleView;
+	private WorkView workView;
 	
 	//Model references
-	WorkSchedule workSchedule;
-	WorkSession workSession;
+	private WorkSchedule workSchedule;
+	private WorkSession workSession;
 	
 	//Need a shared Listener for these across all components
-	MovementListener moveListener = new MovementListener();
-	EditNameListener nameListener = new EditNameListener();
-	EditLengthListener lengthListener = new EditLengthListener();
+	private MovementListener moveListener = new MovementListener();
+	private EditNameListener nameListener = new EditNameListener();
+	private EditLengthListener lengthListener = new EditLengthListener();
 	
 	
 	public ScheduleController( ScheduleView scheduleView, WorkView workView,
@@ -140,7 +140,6 @@ public class ScheduleController {
 				        }
 				        
 				        if( componentMoving) {
-				      		System.out.println( "moving"); //for testing
 				      		scheduleView.setMovingCursor(true);//Change cursor to indicate Task being dragged
 				        }
 			    	}
@@ -376,20 +375,8 @@ public class ScheduleController {
 			public void actionPerformed(ActionEvent e) {
 				int confirm = JOptionPane.showConfirmDialog (null, "Saving will overwrite current data. Continue?","Warning",JOptionPane.YES_NO_OPTION);
 				if( confirm == JOptionPane.YES_OPTION) {
-					ObjectContainer data = Db4oEmbedded.openFile(Db4oEmbedded
-							 .newConfiguration(), "pomodorodata"); //Open the data file
-					try { //Delete old data 
-							ObjectSet result= data.queryByExample(new Object());
-							while(result.hasNext()) 
-							 data.delete(result.next());
-							
-							data.store(workSchedule); //Store both models
-							data.store(workSession);
-							JOptionPane.showMessageDialog(null, "Schedule and progress saved!");
-					}
-					finally {
-								 data.close();
-								}
+					workSchedule.save();
+					workSession.save();
 				}
 			
 			}

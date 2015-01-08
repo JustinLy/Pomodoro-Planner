@@ -5,10 +5,10 @@ import java.util.concurrent.TimeUnit;
 /**Class to keep track of current time on the timer for a pomodoro or break **/
 public class TimeState {
 
-	int originalTime;
-	int millis;
-	long minutes;
-	long seconds;
+	private int originalTime;
+	private int millis;
+	private long minutes;
+	private long seconds;
 	
 	public TimeState( int millis ) {
 		this.originalTime = millis;

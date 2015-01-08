@@ -71,7 +71,6 @@ public class Column extends JPanel implements Scrollable {
 				if( safeToChange) {
 					((JComponent) ( (JViewport)Column.this.getParent() ).getParent()).setBorder( BorderFactory.createLineBorder(Color.BLACK));
 					Column.focusedColumn = 0; //reset to default today
-					System.out.println( "reset to today");
 				}
 			}
 			
@@ -79,7 +78,6 @@ public class Column extends JPanel implements Scrollable {
 				//This terrible line of code here, highlights the JScrollPane (because dif Columns will have uneven sizes, making uneven highlighted boxes)
 				((JComponent) ( (JViewport)Column.this.getParent() ).getParent()).setBorder( BorderFactory.createLineBorder(color,3));
 				Column.focusedColumn = Column.this.day;
-				System.out.println( "set to " + Column.this.day);
 			}
 		});
 

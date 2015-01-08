@@ -11,7 +11,7 @@ import com.db4o.ObjectContainer;
 import com.db4o.ObjectSet;
 
 public class WorkSchedule extends Observable {
-	List< ArrayList<Task> > schedule; //List containing 3 tasklists, one for today, tomorrow, day after
+	private List< ArrayList<Task> > schedule; //List containing 3 tasklists, one for today, tomorrow, day after
 	
 	//Constants for each of the 3 lists
 	public static int TODAY = 0;
@@ -49,7 +49,6 @@ public class WorkSchedule extends Observable {
 			if(scheduleData.hasNext()) {//Retrieve the WorkSchedule {
 				WorkSchedule oldSchedule = (WorkSchedule) scheduleData.next();
 				oldSchedule.deleteObservers(); //Deletes old observers 
-				System.out.println( "schedule");
 				return oldSchedule;
 		}
 			else
@@ -203,7 +202,6 @@ public class WorkSchedule extends Observable {
 			 data.delete(result.next());
 			
 			data.store(this); //Store this workschedule
-			System.out.println("hi");
 	}
 	finally {
 				 data.close();
