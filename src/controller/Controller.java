@@ -357,11 +357,15 @@ public class Controller {
 		
 		class completeDayListener implements ActionListener {
 			/**Handles user requests (from the view) to stop working for today and prepare the planner for tomorrow
-			 by appending the tasks for "Tomorrow" to "Today" and "Day After" to "Tomorrow"*/
+			 by appending the tasks for "Tomorrow" to "Today" and "Day After" to "Tomorrow" Also clears WorkSession progress*/
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				// TODO Auto-generated method stub
+				int confirm = JOptionPane.showConfirmDialog (null, "Will remove all Completed Tasks and any paused progress. Continue?","Warning",JOptionPane.YES_NO_OPTION);
 				
+				if( confirm == JOptionPane.YES_OPTION) {
+					workSchedule.completeDay(); 
+					workSession.resetProgress();
+				}
 			}
 			
 		}

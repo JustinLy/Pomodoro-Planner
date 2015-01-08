@@ -6,6 +6,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
 
+import com.db4o.Db4oEmbedded;
+import com.db4o.ObjectContainer;
+import com.db4o.ObjectSet;
+
 public class WorkSchedule extends Observable {
 	List< ArrayList<Task> > schedule; //List containing 3 tasklists, one for today, tomorrow, day after
 	
@@ -30,6 +34,31 @@ public class WorkSchedule extends Observable {
 		this.schedule = previousSchedule.schedule;
 		updateObservers();
 		}
+	
+	/**
+	 * Loads the saved WorkSchedule from the data file and returns it, if it exists, else returns null
+	 * @return the current saved WorkSchedule or new empty WorkSchedule if it doesn't exist in the file
+	 */
+	public static WorkSchedule loadSchedule() {
+		ObjectContainer data = Db4oEmbedded.openFile(Db4oEmbedded
+				 .newConfiguration(), "pomodorodata"); //Open the data file
+   	
+   	try { //Attempt to load data
+			ObjectSet scheduleData= data.queryByExample(new WorkSchedule());
+			
+			if(scheduleData.hasNext()) {//Retrieve the WorkSchedule {
+				WorkSchedule oldSchedule = (WorkSchedule) scheduleData.next();
+				oldSchedule.deleteObservers(); //Deletes old observers 
+				System.out.println( "schedule");
+				return oldSchedule;
+		}
+			else
+				return new WorkSchedule(); //If no WorkSchedule found in the file
+	}
+   	finally {
+		 data.close();
+		}
+	}
 	
 	/**
 	 * Returns the list of tasks scheduled for the specified day
@@ -112,7 +141,12 @@ public class WorkSchedule extends Observable {
 		}
 	}
 	
-	
+	/**
+	 * Removes all "Completed" Tasks from the TODAY list and then shifts all TOMORROW list tasks to TODAY, and all 
+	 * DAY_AFTER list tasks to TOMORROW. DAY_AFTER list will be empty after this. 
+	 * Also erases any progress in the WorkSession including Pomodros Completed, Pomodoros till a long break, and any
+	 * state it may have been in prior to this method being called. (Settings are preserved however) 
+	 */
 	public void completeDay() {
 		List<Task> today = schedule.get(WorkSchedule.TODAY);
 		List<Task> tomorrow = schedule.get(WorkSchedule.TOMORROW);
@@ -156,6 +190,7 @@ public class WorkSchedule extends Observable {
 		task.setTaskLength(newLength);
 		updateObservers();
 	}
+	
 	
 	/**Updates the Observers attached to this Observable object*/
 	public void updateObservers() {

@@ -39,7 +39,7 @@ public class WorkController {
 	class ResetListener implements ActionListener{
 		/**Handles user request (from WorkView) to reset the current Pomodoro or Break's timer (to its original value) */
 		public void actionPerformed( ActionEvent e ) {
-			workSession.reset();
+			workSession.resetTime();
 		}
 	}
 }

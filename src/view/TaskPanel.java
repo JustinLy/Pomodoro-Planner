@@ -10,6 +10,8 @@ import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.font.TextAttribute;
+import java.util.Map;
 
 public class TaskPanel extends JPanel
 {
@@ -18,13 +20,14 @@ public class TaskPanel extends JPanel
 	 */
 	private static final long serialVersionUID = 1L;
 	private JLabel taskName;
+	private String name;
     private JTextField length;
     private int size;
-    private int day;
     private boolean editable = true;
     
     public TaskPanel(String name, int duration )
     {
+    	this.name = name; //Used in setUneditable 
     	size = duration;
         setBorder( BorderFactory.createLineBorder( Color.BLACK ));
         
@@ -69,9 +72,14 @@ public class TaskPanel extends JPanel
     
     /**
      * Sets this TaskPanel to be "uneditable", so that its position and attributes cannot be changed by the user, except
-     * by deleting the TaskPanel.
+     * by deleting the TaskPanel. Also puts a strikethrough on the font of this TaskPanel to indicate completion.
      */
     public void setUneditable() {
+    	Font font = new Font("tahoma", Font.PLAIN, 12);
+    	Map  attributes = font.getAttributes();
+    	attributes.put(TextAttribute.STRIKETHROUGH, TextAttribute.STRIKETHROUGH_ON);
+    	Font newFont = new Font(attributes);
+    	taskName.setText("<html><s>" + name + "</s></html>" ); //Put a strikethrough on the font to indicate completion
     	editable = false;
     	//TODO: add the strike-through effect on this JLabel
     }

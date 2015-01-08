@@ -5,6 +5,10 @@ import java.util.Queue;
 
 import javax.swing.Timer;
 
+import com.db4o.Db4oEmbedded;
+import com.db4o.ObjectContainer;
+import com.db4o.ObjectSet;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -20,6 +24,31 @@ public class WorkSession extends Observable {
 	private Timer timer = null; //timer to time the current pomodoro or break
 
 	/**
+	 * Loads the saved WorkSession from the data file and returns it, if it exists, else returns null
+	 * @return the current saved WorkSession or a new empty WorkSession if it doesn't exist in the file
+	 */
+	public static WorkSession loadWorkSession() {
+		ObjectContainer data = Db4oEmbedded.openFile(Db4oEmbedded
+				 .newConfiguration(), "pomodorodata"); //Open the data file
+   	
+   	try { //Attempt to load data
+			ObjectSet sessionData = data.queryByExample(WorkSession.class );
+			
+			if( sessionData.hasNext() ) { //Retrieve the WorkSession 
+				WorkSession oldSession = (WorkSession) sessionData.next();
+				oldSession.deleteObservers();
+				System.out.println( "loaded");
+				return oldSession; 
+			}
+			else
+				return new WorkSession(); //If no WorkSession saved on file		
+	}
+	finally {
+				 data.close();
+			}
+	}
+	
+	/**
 	 * Works on the given task list using the Pomodoro Technique continuously until
 	 * "pause" is set by the user or all tasks in the list have been completed.
 	 * @param taskList - Queue of tasks to complete 
@@ -33,7 +62,9 @@ public class WorkSession extends Observable {
 			if( state == null || state.getName() != StateName.BREAK ) //Defaults to Pomodoro state if not resuming from Break
 				state = new Pomodoro( settings.getPomLength() );
 		}
-		taskList.remove(); //We know the task on top of queue is same as currentTask, so remove the duplicate
+		else
+			taskList.remove(); //We know the task on top of queue is same as currentTask, so remove the duplicate
+		
 		setChanged(); //Updating observers right away to prevent displaying old information
 		notifyObservers();
 		timer = new Timer( 1000, new ActionListener() {
@@ -45,7 +76,6 @@ public class WorkSession extends Observable {
 					setChanged();
 					notifyObservers(); //Display current time on view
 					currentTime.countdown(); //decrease pom or break time by 1
-					
 				}
 			
 				if( currentTime.getMillis() == -1000 ) 
@@ -61,13 +91,24 @@ public class WorkSession extends Observable {
 	}
 	
 	/**Resets the current pomodoro or break to its starting time */
-	public void reset() {
+	public void resetTime() {
 		if( state != null && state instanceof TimeState ) { //Sanity check. Is only called when its a TimeState anyways.
 			TimeState currentTime = (TimeState) state;
 			currentTime.reset();
 			setChanged();
 			notifyObservers(); //Instantly update the reset time to Observers
 		}
+	}
+	
+	/**
+	 * Resets the current State, task Pomodoros completed, and LongBreakCount to their default values. This effectively clears the 
+	 * WorkSession's data, except for the Settings.
+	 */
+	public void resetProgress() {
+		currentTask = null;
+		state = null;
+		pomsCompleted = 0;
+		longBreakCount = 0;
 	}
 	
 	public Settings getSettings() {
@@ -105,11 +146,10 @@ public class WorkSession extends Observable {
 	 */
 	public int getPomsTillLong() {
 		//Calculating Pomodoros till long break pomsTillBreak
-		
-		int temp = longBreakCount % settings.getLongBreak();
+		int temp = longBreakCount % settings.getPomsForLongBreak();
 		int pomsTillBreak ;
-		if( longBreakCount > settings.getLongBreak() ) //Need to use "temp" and formula if greater
-			pomsTillBreak = settings.getPomsForLongBreak() - temp;
+		if( longBreakCount > settings.getLongBreak() ) //Need to use "temp" and formula if greater. Display pomsForLongBreak if formula calculates 0
+			pomsTillBreak = settings.getPomsForLongBreak() != 0 ? (settings.getPomsForLongBreak() - temp) : settings.getPomsForLongBreak();
 		else //If less, just subtract longBreakCount from poms needed for long break
 			pomsTillBreak = settings.getPomsForLongBreak() - longBreakCount;
 		
