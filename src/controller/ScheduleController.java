@@ -377,6 +377,7 @@ public class ScheduleController {
 				if( confirm == JOptionPane.YES_OPTION) {
 					workSchedule.save();
 					workSession.save();
+					JOptionPane.showMessageDialog(null, "Schedule and progress saved!");
 				}
 			
 			}
