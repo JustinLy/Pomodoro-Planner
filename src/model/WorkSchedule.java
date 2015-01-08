@@ -191,6 +191,24 @@ public class WorkSchedule extends Observable {
 		updateObservers();
 	}
 	
+	/**
+	 * Saves this WorkSchedule into a datafile and overwrites previous WorkSchedule data
+	 */
+	public void save() {
+		ObjectContainer data = Db4oEmbedded.openFile(Db4oEmbedded
+				 .newConfiguration(), "pomodorodata"); //Open the data file
+		try { //Delete old data
+			ObjectSet result= data.queryByExample(WorkSchedule.class);
+			while(result.hasNext()) 
+			 data.delete(result.next());
+			
+			data.store(this); //Store this workschedule
+			System.out.println("hi");
+	}
+	finally {
+				 data.close();
+			}
+	}
 	
 	/**Updates the Observers attached to this Observable object*/
 	public void updateObservers() {

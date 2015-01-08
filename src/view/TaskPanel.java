@@ -44,6 +44,7 @@ public class TaskPanel extends JPanel
       add( taskName, BorderLayout.CENTER );
         add( length, BorderLayout.EAST);
       
+        setBackground( Color.white);
         setMaximumSize( getPreferredSize() );
         
         //Highlights Task with same color as its Column when clicked and focuses it. (purely for aesthetics)

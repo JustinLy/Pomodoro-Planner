@@ -1,10 +1,13 @@
 package model;
 
+import java.util.UUID;
+
 public class Task {
 	
 	private String taskName;
 	private int taskLength;
 	private boolean complete;
+	private UUID id = UUID.randomUUID(); //Required for checking equality when attempting to resume Tasks after loading from file
 	
 	/** Getters and Setters for taskName, taskLength, complete **/
 	
@@ -31,6 +34,10 @@ public class Task {
 	}
 	public void setComplete(boolean complete) {
 		this.complete = complete;
+	}
+
+	public UUID getId() {
+		return id;
 	}
 	
 }

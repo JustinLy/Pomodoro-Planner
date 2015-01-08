@@ -1,5 +1,6 @@
 package controller;
-import java.awt.Component;
+import java.awt.Color;
+import java.awt.Component; 
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Event;
@@ -26,6 +27,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -36,12 +38,9 @@ import com.db4o.Db4oEmbedded;
 import com.db4o.ObjectContainer;
 import com.db4o.ObjectSet;
 
-import controller.Controller.ScheduleController.EditLengthListener;
-import controller.Controller.ScheduleController.EditNameListener;
-import controller.Controller.ScheduleController.MovementListener;
 import view.*;
 import model.*;
-public class Controller {
+public class ScheduleController {
 
 	//View references
 	ScheduleView scheduleView;
@@ -52,13 +51,12 @@ public class Controller {
 	WorkSession workSession;
 	
 	//Need a shared Listener for these across all components
-	ScheduleController scheduleController = new ScheduleController();
-	MovementListener moveListener = scheduleController.new MovementListener();
-	EditNameListener nameListener = scheduleController.new EditNameListener();
-	EditLengthListener lengthListener = scheduleController.new EditLengthListener();
+	MovementListener moveListener = new MovementListener();
+	EditNameListener nameListener = new EditNameListener();
+	EditLengthListener lengthListener = new EditLengthListener();
 	
 	
-	public Controller( ScheduleView scheduleView, WorkView workView,
+	public ScheduleController( ScheduleView scheduleView, WorkView workView,
 						WorkSchedule workSchedule, WorkSession workSession ) {
 			this.scheduleView = scheduleView;
 			this.workView = workView;
@@ -73,19 +71,19 @@ public class Controller {
 	 */
 	public void registerScheduleComponents( ) {
 		EventListener[] listeners = new EventListener[6];
-		listeners[0] = scheduleController.new ColumnComponentsListener();
-		listeners[1] = scheduleController.new AddTaskListener();
-		listeners[2] = scheduleController.new SettingsListener();
-		listeners[3] = scheduleController.new completeDayListener();
-		listeners[4] = scheduleController.new SaveListener();
-		listeners[5] = scheduleController.new WorkListener();
+		listeners[0] = new ColumnComponentsListener();
+		listeners[1] = new AddTaskListener();
+		listeners[2] = new SettingsListener();
+		listeners[3] = new completeDayListener();
+		listeners[4] = new SaveListener();
+		listeners[5] = new WorkListener();
 		scheduleView.registerListeners(listeners);
-		workView.registerReopenListener(scheduleController.new ReopenListener());
+		workView.registerReopenListener(new ReopenListener()); //Listener registered to the WorkView, to reopen ScheduleView when paused.
 	}
 	
 
     
-	class ScheduleController {
+
 		/**Controls all interactions between ScheduleView and WorkSchedule*/
 		
 		class ColumnComponentsListener extends ContainerAdapter {
@@ -108,7 +106,7 @@ public class Controller {
 					newTask.getLengthField().addActionListener(lengthListener); 
 					newTask.getLengthField().addFocusListener(lengthListener); //again, need to register both types of listeners	
 					}
-					newComp.addKeyListener(scheduleController.new DeleteTaskListener() ); //Add the DeleteTaskListener
+					newComp.addKeyListener(new DeleteTaskListener() ); //Add the DeleteTaskListener
 				}
 				
 				if( newTask == null || newTask.isEditable()) { //Only register to Spaces and "editable" TaskPanels
@@ -152,22 +150,23 @@ public class Controller {
 			    public void mouseEntered( MouseEvent e ) {
 			       //only records the component entered if instance of Task, Space or Column
 			        if( componentMoving ) {
-			        	if( e.getSource() instanceof Space )
-			        		System.out.println( "space" );
-			        	else if( e.getSource() instanceof TaskPanel )
-			        		System.out.println( "taskpanel");
+			        	if( e.getSource().getClass() == TaskPanel.class || e.getSource().getClass() == Space.class ) {//Sanity check
+			        		JPanel component = (JPanel) e.getSource();
+			        		Column parentColumn = (Column) component.getParent();
+			        		component.setBorder(BorderFactory.createLineBorder(parentColumn.getColor())); //Highlight with parent's color
+			        	}
 			        	canDrop = true; //Confirms that moving Task can be dropped on this Space or Column
 			            targetComponent = (JComponent) e.getSource();
-			            System.out.println( "can drop"); //for testing
 			        }
 			        else {
 			            canDrop = false;
-			            System.out.println( "can not drop");
 			        }
 			    }
 			    
 			    /**Sets canDrop to false and destroys the previously recorded targetComponent when exiting that movingComponent in the view */
 			    public void mouseExited( MouseEvent e ) {
+			    	if( componentMoving && e.getSource() != movingTask )
+			    		( (JComponent) e.getSource() ).setBorder(BorderFactory.createLineBorder(Color.BLACK)); //remove the highlighting on task or space
 			    	canDrop = false;
 			    	targetComponent = null;
 			    }
@@ -375,11 +374,10 @@ public class Controller {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				ObjectContainer data = Db4oEmbedded.openFile(Db4oEmbedded
-						 .newConfiguration(), "pomodorodata"); //Open the data file
 				int confirm = JOptionPane.showConfirmDialog (null, "Saving will overwrite current data. Continue?","Warning",JOptionPane.YES_NO_OPTION);
-				
 				if( confirm == JOptionPane.YES_OPTION) {
+					ObjectContainer data = Db4oEmbedded.openFile(Db4oEmbedded
+							 .newConfiguration(), "pomodorodata"); //Open the data file
 					try { //Delete old data 
 							ObjectSet result= data.queryByExample(new Object());
 							while(result.hasNext()) 
@@ -459,5 +457,5 @@ public class Controller {
 
 		
 		
-	}
+	
 }

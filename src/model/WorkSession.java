@@ -37,7 +37,7 @@ public class WorkSession extends Observable {
 			if( sessionData.hasNext() ) { //Retrieve the WorkSession 
 				WorkSession oldSession = (WorkSession) sessionData.next();
 				oldSession.deleteObservers();
-				System.out.println( "loaded");
+				System.out.println(( (TimeState)oldSession.getState() ).toString() );
 				return oldSession; 
 			}
 			else
@@ -56,14 +56,15 @@ public class WorkSession extends Observable {
 	 */
 	public void workOnTasks( Queue<Task> taskList ) {
 		this.taskList = taskList;
-		if( currentTask == null || currentTask != taskList.peek() ) { //Check if session needs to be (re-)initialized
+		if( currentTask == null || !currentTask.getId().equals(taskList.peek().getId()) ) { //Check if session needs to be (re-)initialized
+			//System.out.println( currentTask.getTaskName() + " " + taskList.peek().getTaskName() );
 			currentTask = taskList.remove(); //Get task on top of list
 			pomsCompleted = 0; //Reset pomodoros completed to 0 for the new task
 			if( state == null || state.getName() != StateName.BREAK ) //Defaults to Pomodoro state if not resuming from Break
 				state = new Pomodoro( settings.getPomLength() );
 		}
 		else
-			taskList.remove(); //We know the task on top of queue is same as currentTask, so remove the duplicate
+			currentTask = taskList.remove(); //We know the task on top of queue is same as currentTask, so remove the duplicate
 		
 		setChanged(); //Updating observers right away to prevent displaying old information
 		notifyObservers();
@@ -95,8 +96,6 @@ public class WorkSession extends Observable {
 		if( state != null && state instanceof TimeState ) { //Sanity check. Is only called when its a TimeState anyways.
 			TimeState currentTime = (TimeState) state;
 			currentTime.reset();
-			setChanged();
-			notifyObservers(); //Instantly update the reset time to Observers
 		}
 	}
 	
@@ -109,6 +108,25 @@ public class WorkSession extends Observable {
 		state = null;
 		pomsCompleted = 0;
 		longBreakCount = 0;
+	}
+	
+	/**
+	 * Saves this WorkSession into a datafile and overwrites previous WorkSession data
+	 */
+	public void save() {
+		ObjectContainer data = Db4oEmbedded.openFile(Db4oEmbedded
+				 .newConfiguration(), "pomodorodata"); //Open the data file
+		try { //Delete old data
+			ObjectSet result= data.queryByExample(WorkSession.class);
+			while(result.hasNext()) 
+			 data.delete(result.next());
+			
+			data.store(this); //Store this worksession
+			System.out.println("yo");
+	}
+	finally {
+				 data.close();
+			}
 	}
 	
 	public Settings getSettings() {
@@ -148,8 +166,8 @@ public class WorkSession extends Observable {
 		//Calculating Pomodoros till long break pomsTillBreak
 		int temp = longBreakCount % settings.getPomsForLongBreak();
 		int pomsTillBreak ;
-		if( longBreakCount > settings.getLongBreak() ) //Need to use "temp" and formula if greater. Display pomsForLongBreak if formula calculates 0
-			pomsTillBreak = settings.getPomsForLongBreak() != 0 ? (settings.getPomsForLongBreak() - temp) : settings.getPomsForLongBreak();
+		if( longBreakCount >= settings.getPomsForLongBreak() ) //Need to use "temp" and formula if greater. Display pomsForLongBreak if formula calculates 0
+			pomsTillBreak = temp != 0 ? (settings.getPomsForLongBreak() - temp) : settings.getPomsForLongBreak();
 		else //If less, just subtract longBreakCount from poms needed for long break
 			pomsTillBreak = settings.getPomsForLongBreak() - longBreakCount;
 		

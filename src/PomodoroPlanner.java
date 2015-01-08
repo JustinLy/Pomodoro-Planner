@@ -19,7 +19,7 @@ public class PomodoroPlanner {
 		workSchedule.addObserver(scheduleView); //register Observers to models
 		workSession.addObserver(workView);
 		
-		Controller controller = new Controller(  scheduleView, workView, workSchedule, workSession);
+		ScheduleController scheduleController = new ScheduleController(  scheduleView, workView, workSchedule, workSession);
 		WorkController workController = new WorkController( workView, workSession);
 		
 		workSchedule.updateObservers();
@@ -27,7 +27,7 @@ public class PomodoroPlanner {
 		}
 		catch(Exception e )
 		{
-			System.out.println("fail");
+			System.out.println("Error launching Pomodoro Planner");
 		}
 	}
 	
