@@ -166,7 +166,7 @@ public class WorkSession extends Observable {
 		int temp = longBreakCount % settings.getPomsForLongBreak();
 		int pomsTillBreak ;
 		if( longBreakCount >= settings.getPomsForLongBreak() ) //Need to use "temp" and formula if greater. Display pomsForLongBreak if formula calculates 0
-			pomsTillBreak = temp != 0 ? (settings.getPomsForLongBreak() - temp) : settings.getPomsForLongBreak();
+			pomsTillBreak = temp != 0 ? (settings.getPomsForLongBreak() - temp) : 0;
 		else //If less, just subtract longBreakCount from poms needed for long break
 			pomsTillBreak = settings.getPomsForLongBreak() - longBreakCount;
 		

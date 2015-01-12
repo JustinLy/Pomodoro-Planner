@@ -37,22 +37,9 @@ public class WorkView implements Observer {
 	private JLabel pomsTillLongBreak = new JLabel();
 	private JButton pauseButton = new JButton("Pause / Return to Schedule Window");
 
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					WorkView window = new WorkView();
-					window.frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
-
+/**
+ * Makes the window visible
+ */
 public void run() {
 		
 		this.frame.pack();
@@ -124,7 +111,10 @@ public void run() {
 				currentTask.setText(task.getTaskName()); //Display current Task
 				progress.setText(session.getPomsCompleted() +  " / " + task.getTaskLength() + " Pomodoros Completed" );
 				currentTime.setText(taskTime.toString());
-				pomsTillLongBreak.setText(session.getPomsTillLong() + " more till Long Break");
+				if( session.getPomsTillLong() == 0 ) //Long break already happened so display full # of poms for long break
+					pomsTillLongBreak.setText(session.getSettings().getPomsForLongBreak() + " more till Long Break");
+				else
+					pomsTillLongBreak.setText(session.getPomsTillLong() + " more till Long Break");
 				break;
 				
 			case BREAK :
