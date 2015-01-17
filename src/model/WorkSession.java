@@ -63,8 +63,12 @@ public class WorkSession extends Observable {
 			if( state == null || state.getName() != StateName.BREAK ) //Defaults to Pomodoro state if not resuming from Break
 				state = new Pomodoro( settings.getPomLength() );
 		}
-		else
+		else {
 			currentTask = taskList.remove(); //We know the task on top of queue is same as currentTask, so remove the duplicate
+			if( ( (TimeState) state ).getOriginalTime() != settings.getPomLength() ) //check if User has changed the pomodoro length in settings
+				state = new Pomodoro( settings.getPomLength() );
+			
+		}
 		
 		setChanged(); //Updating observers right away to prevent displaying old information
 		notifyObservers();
@@ -73,7 +77,6 @@ public class WorkSession extends Observable {
 				TimeState currentTime = null;
 				if( state != null && state instanceof TimeState ) { //Sanity check. Should always be a TimeState here anyways.
 					currentTime = (TimeState) state;
-					//System.out.println( currentTime.getSeconds() );
 					setChanged();
 					notifyObservers(); //Display current time on view
 					currentTime.countdown(); //decrease pom or break time by 1

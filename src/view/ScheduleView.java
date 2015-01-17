@@ -8,6 +8,7 @@ import java.awt.GridLayout;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.BoxLayout;
+import javax.swing.SwingUtilities;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -24,6 +25,7 @@ import java.awt.event.ComponentListener;
 import java.awt.event.ContainerAdapter;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 
 import javax.swing.SwingConstants;
 import javax.swing.GroupLayout;
@@ -146,6 +148,7 @@ public class ScheduleView implements Observer {
 				
 		//Building the "Today" Panel
 		JScrollPane scrollPane = new JScrollPane();
+		
 		scrollPane.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 		scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
 		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
