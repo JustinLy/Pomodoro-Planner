@@ -33,6 +33,8 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 
 import com.db4o.Db4oEmbedded;
 import com.db4o.ObjectContainer;
@@ -278,11 +280,28 @@ public class ScheduleController {
 				JPanel inputPanel = new JPanel();
 				inputPanel.setLayout( new GridLayout( 0, 2 ));
 		        inputPanel.add( new JLabel( "Task: "));
-		        inputPanel.add( new JTextField( 16));
+		        
+		        JTextField taskInput = new JTextField(16 );
+		        //Adds listener that sets focus to the task name input field the moment the inputPanel is visible
+		        taskInput.addAncestorListener( new AncestorListener() {
+
+					public void ancestorAdded(AncestorEvent event) {
+						( (JComponent) event.getComponent() ).requestFocusInWindow();
+					}
+
+					public void ancestorMoved(AncestorEvent event) {
+					}
+					public void ancestorRemoved(AncestorEvent event) {
+					}
+		        	
+		        });      
+		        inputPanel.add( taskInput );
+		       
 		        inputPanel.add( new JLabel( "Length"));
 		        inputPanel.add( new JTextField( 3 ));
 		        
 				int result = JOptionPane.showConfirmDialog( null, inputPanel, "Enter task name and length (in pomodoros)", JOptionPane.OK_CANCEL_OPTION );
+				
                 try{
                 if( result == JOptionPane.OK_OPTION  ) //Retrieve input and send it to the WorkSchedule model to create new task
                 {   
