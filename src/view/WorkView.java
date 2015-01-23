@@ -25,6 +25,11 @@ import model.WorkSession.StateName;
 import net.miginfocom.swing.MigLayout;
 
 import java.awt.Color;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+ 
+import sun.audio.*;
 
 public class WorkView implements Observer {
 
@@ -103,49 +108,61 @@ public void run() {
 			WorkSession session = (WorkSession) arg0;
 			StateName state = session.getStateName();
 			Task task = session.getCurrentTask();
-		
+
 			switch( state ) { //Displays information on screen depending on the model's State
-			case POMODORO: 
-				setIsMessage(false); //Not a message;
-				TimeState taskTime = (TimeState) session.getState(); //We know it's a Pomodoro state so we can cast TimeSTate
-				currentTask.setText(task.getTaskName()); //Display current Task
-				progress.setText(session.getPomsCompleted() +  " / " + task.getTaskLength() + " Pomodoros Completed" );
-				currentTime.setText(taskTime.toString());
-				if( session.getPomsTillLong() == 0 ) //Long break already happened so display full # of poms for long break
-					pomsTillLongBreak.setText(session.getSettings().getPomsForLongBreak() + " more till Long Break");
-				else
-					pomsTillLongBreak.setText(session.getPomsTillLong() + " more till Long Break");
-				break;
-				
-			case BREAK :
-				setIsMessage(false); //not a message;
-				TimeState breakTime = (TimeState) session.getState(); //We know it's a Break state so we can cast TimeSTate
-				currentTime.setText(breakTime.toString());
-				progress.setText(BLANKSPACE); //Nothing to display for progress of a break
-				pomsTillLongBreak.setText(BLANKSPACE); //Nothing to display for a break
-				if( session.getPomsTillLong() == 0 )
-					currentTask.setText( "Long Break" );
-				else
-					currentTask.setText( "Short Break" );
-				break;
-				
-			case TASKDONE:
-				setIsMessage(true);
-				progress.setText(BLANKSPACE); //Nothing to display 
-				pomsTillLongBreak.setText(BLANKSPACE); //Nothing to display
-				currentTask.setText( task.getTaskName() + " Complete");
-				TimeState taskMsgTime = (TimeState) session.getState(); //test
-				break;
-				
-			case ALLDONE:
-				setIsMessage(true);
-				currentTask.setText( "All Tasks Today Completed!");
-				break;
-				
-			default: break;
-			}
+				case POMODORO: 
+					setIsMessage(false); //Not a message;
+					TimeState taskTime = (TimeState) session.getState(); //We know it's a Pomodoro state so we can cast TimeSTate
+					currentTask.setText(task.getTaskName()); //Display current Task
+					progress.setText(session.getPomsCompleted() +  " / " + task.getTaskLength() + " Pomodoros Completed" );
+					currentTime.setText(taskTime.toString());
+					if( session.getPomsTillLong() == 0 ) //Long break already happened so display full # of poms for long break
+						pomsTillLongBreak.setText(session.getSettings().getPomsForLongBreak() + " more till Long Break");
+					else
+						pomsTillLongBreak.setText(session.getPomsTillLong() + " more till Long Break");
+					break;
+					
+				case BREAK :
+					setIsMessage(false); //not a message;
+					TimeState breakTime = (TimeState) session.getState(); //We know it's a Break state so we can cast TimeSTate
+					currentTime.setText(breakTime.toString());
+					progress.setText(BLANKSPACE); //Nothing to display for progress of a break
+					pomsTillLongBreak.setText(BLANKSPACE); //Nothing to display for a break
+					if( session.getPomsTillLong() == 0 )
+						currentTask.setText( "Long Break" );
+					else
+						currentTask.setText( "Short Break" );
+					break;
+					
+				case TASKDONE:
+					setIsMessage(true);
+					progress.setText(BLANKSPACE); //Nothing to display 
+					pomsTillLongBreak.setText(BLANKSPACE); //Nothing to display
+					currentTask.setText( task.getTaskName() + " Complete");
+					TimeState taskMsgTime = (TimeState) session.getState(); //test
+					break;
+					
+				case ALLDONE:
+					setIsMessage(true);
+					currentTask.setText( "All Tasks Today Completed!");
+					break;
+					
+				default: break;
+				}
 			
 			if( session.stateChanging()) { //Make window up up to alert users when changing states (ie from Pomodoro to Break)
+				
+				/**Plays a sound to alert the user that they are transitioning to either Pomodoro or break */
+				if( session.getStateName() == StateName.POMODORO || session.getStateName() == StateName.BREAK ) {
+					try{
+					    InputStream inputStream = getClass().getResourceAsStream("/zsaber.wav");
+					    AudioStream audioStream = new AudioStream(inputStream);
+					    AudioPlayer.player.start(audioStream);
+					}
+					catch( Exception e ) {
+						System.out.println( "Error playing sound");
+					}
+			}
 				frame.toFront();
 				if( state == WorkSession.StateName.ALLDONE)
 					frame.setVisible(false); //Hide the WorkView, trigger listener to return to ScheduleView

@@ -14,7 +14,7 @@ public class Settings {
 		return pomLength;
 	}
 	public void setPomLength(int pomLength) {
-		this.pomLength = (int) ( TimeUnit.MINUTES.toMillis(pomLength) / 10 ) ;
+		this.pomLength = (int) TimeUnit.MINUTES.toMillis(pomLength) ;
 	}
 	public int getPomsForLongBreak() {
 		return pomsForLongBreak;
@@ -32,6 +32,6 @@ public class Settings {
 		return longBreak;
 	}
 	public void setLongBreak(int longBreak) {
-		this.longBreak = (int)TimeUnit.MINUTES.toMillis(longBreak) / 10;
+		this.longBreak = (int)TimeUnit.MINUTES.toMillis(longBreak) ;
 	}
 }
