@@ -21,7 +21,7 @@ public class Space extends JPanel {
 	   {
 	       
 	      setMaximumSize( getPreferredSize() );
-	       setBackground( Color.LIGHT_GRAY);
+	     //  setBackground( Color.LIGHT_GRAY);
 	       
 	     //Focuses space when clicked. Helps with giving users more areas to click on for defocusing when editing tasks, etc
 	        addMouseListener( new MouseAdapter() {

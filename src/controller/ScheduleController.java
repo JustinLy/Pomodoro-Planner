@@ -167,7 +167,7 @@ public class ScheduleController {
 			    /**Sets canDrop to false and destroys the previously recorded targetComponent when exiting that movingComponent in the view */
 			    public void mouseExited( MouseEvent e ) {
 			    	if( componentMoving && e.getSource() != movingTask )
-			    		( (JComponent) e.getSource() ).setBorder(BorderFactory.createLineBorder(Color.BLACK)); //remove the highlighting on task or space
+			    		( (JComponent) e.getSource() ).setBorder(BorderFactory.createEmptyBorder()); //remove the highlighting on task or space
 			    	canDrop = false;
 			    	targetComponent = null;
 			    }
