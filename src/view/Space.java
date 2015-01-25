@@ -14,7 +14,7 @@ public class Space extends JPanel {
 	    
 	   public Dimension getPreferredSize()
 	   {
-	       return new Dimension( getMaximumSize().width, 35);
+	       return new Dimension( getMaximumSize().width, 20);
 	   }
 	   
 	   public Space( )
