@@ -217,12 +217,12 @@ public class ScheduleView implements Observer {
 		else {
 			WorkSchedule schedule = (WorkSchedule) arg0;
 			
-			for( int ind = 0; ind < 3; ind ++ ) { 
+			for( int ind = 0; ind < WorkSchedule.NUM_COLUMNS; ind ++ ) { 
 				columns.get(ind).removeAll(); //Remove the old task list information from each column
 				columns.get(ind).add(new Space(), "wrap" ); //Add initial spaces to columns (to support inserting tasks at top of lists)
 			}
 			
-			for( int ind1 = 0; ind1 < 3; ind1++ ) { //Iterate through all 3 tasklists
+			for( int ind1 = 0; ind1 < WorkSchedule.NUM_COLUMNS; ind1++ ) { //Iterate through all 3 tasklists
 				List<Task> currentTaskList = schedule.getTaskList(ind1);
 				Column currentColumn = columns.get(ind1);
 				

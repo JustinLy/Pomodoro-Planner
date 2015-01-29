@@ -14,9 +14,10 @@ public class WorkSchedule extends Observable {
 	private List< ArrayList<Task> > schedule; //List containing 3 tasklists, one for today, tomorrow, day after
 	
 	//Constants for each of the 3 lists
-	public static int TODAY = 0;
-	public static int TOMORROW = 1;
-	public static int DAY_AFTER = 2;
+	public static final int TODAY = 0;
+	public static final int TOMORROW = 1;
+	public static final int DAY_AFTER = 2;
+	public static final int NUM_COLUMNS = 3;
 	
 	/**Creates an empty workschedule */
 	public WorkSchedule() {
