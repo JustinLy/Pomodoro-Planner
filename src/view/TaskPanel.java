@@ -95,4 +95,9 @@ public class TaskPanel extends JPanel
         return new Dimension( getMaximumSize().width, 40 + 10*size ); //Taller panel if longer length
     }
     
+    @Override
+    public String getName(){
+    	return name;
+    }
+    
 }

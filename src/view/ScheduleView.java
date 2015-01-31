@@ -216,6 +216,7 @@ public class ScheduleView implements Observer {
 		}
 		else {
 			WorkSchedule schedule = (WorkSchedule) arg0;
+			int currentTaskPosition = 1; //Used to calculate the position of the current task worked on in the list
 			
 			for( int ind = 0; ind < WorkSchedule.NUM_COLUMNS; ind ++ ) { 
 				columns.get(ind).removeAll(); //Remove the old task list information from each column
@@ -227,15 +228,22 @@ public class ScheduleView implements Observer {
 				Column currentColumn = columns.get(ind1);
 				
 				for( int ind2 = 0; ind2 < currentTaskList.size(); ind2++ ) { //Iterate through tasks in each list
-					Task currentTask = currentTaskList.get(ind2);
-					TaskPanel newPanel = new TaskPanel( currentTask.getTaskName(), currentTask.getTaskLength());
-					if( currentTask.isComplete() ) //Make TaskPanel uneditable if Task is complete
+					Task task = currentTaskList.get(ind2);
+					TaskPanel newPanel = new TaskPanel( task.getTaskName(), task.getTaskLength());
+					if( task.isComplete() ) {//Make TaskPanel uneditable if Task is complete
 						newPanel.setUneditable();
-					
+						currentTaskPosition +=2; //Increase the position since this task is complete (2 to skip over Space panels)
+					}
 					currentColumn.add( newPanel, "wrap, align center"); //Add TaskPanel with currentTask's info
 					currentColumn.add(new Space(), "wrap"); //Add a Space placeholder after each TaskPanel
 				}
+
+				//System.out.println( ( (TaskPanel)columns.get(WorkSchedule.TODAY).getComponent(currentTaskPosition) ).getName() );
 			}
+			if( currentTaskPosition < columns.get(WorkSchedule.TODAY).getComponentCount() ) //Guard to prevent index out of bounds
+				 columns.get(WorkSchedule.TODAY).getComponent(currentTaskPosition).setBackground(Color.GREEN); //Highlight the current task being worked on
+			//TODO: Make the green highlight only happen when PAUSE is clicked. 
+			
 			frame.revalidate();
 			frame.repaint();
 		}
