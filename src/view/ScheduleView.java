@@ -1,6 +1,6 @@
 package view;
 
-import java.awt.Cursor; 
+import java.awt.Cursor;  
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridLayout;
@@ -9,6 +9,8 @@ import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.BoxLayout;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -105,18 +107,18 @@ public class ScheduleView implements Observer {
 		settingsButton.setVerticalTextPosition(SwingConstants.BOTTOM);
 		settingsButton.setHorizontalTextPosition(SwingConstants.CENTER);
 		settingsButton.setIcon(new ImageIcon(ScheduleView.class.getResource("/javax/swing/plaf/metal/icons/ocean/homeFolder.gif")));
-		topHalf.add(settingsButton, "flowy,cell 0 0");
+		topHalf.add(settingsButton, "flowy,cell 0 0,growx");
 		
 		JLabel lblPomodoroPlanner = new JLabel("Pomodoro Planner");
-		lblPomodoroPlanner.setFont(new Font("Tahoma", Font.BOLD, 22));
+		lblPomodoroPlanner.setFont(new Font("Tahoma", Font.BOLD, 40));
 		lblPomodoroPlanner.setHorizontalAlignment(SwingConstants.CENTER);
-		topHalf.add(lblPomodoroPlanner, "cell 2 0,alignx center,aligny center");
+		topHalf.add(lblPomodoroPlanner, "cell 2 0,growx,alignx center,aligny center");
 		
 		saveButton = new JButton("Save");
 		saveButton.setIcon(new ImageIcon(ScheduleView.class.getResource("/javax/swing/plaf/metal/icons/ocean/floppy.gif")));
 		saveButton.setVerticalTextPosition(SwingConstants.BOTTOM);
 		saveButton.setHorizontalTextPosition(SwingConstants.CENTER);
-		topHalf.add(saveButton, "cell 4 0,alignx right,aligny top");
+		topHalf.add(saveButton, "cell 4 0,growx,alignx right,aligny top");
 		
 		pausedTaskLabel = new JLabel("");
 		topHalf.add(pausedTaskLabel, "cell 2 3,alignx center");
@@ -125,19 +127,24 @@ public class ScheduleView implements Observer {
 		addButton.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		addButton.setFocusable(false);
 		
-		topHalf.add(addButton, "cell 0 8");
+		topHalf.add(addButton, "cell 0 8,growx");
 		
-		workButton = new JButton("      Start Working     ");
+		workButton = new JButton("Start Working");
+		workButton.setFont(new Font("Arial", Font.PLAIN, 18));
+		workButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+			}
+		});
 		workButton.setBackground(Color.GREEN);
-		workButton.setContentAreaFilled(false);
-		workButton.setOpaque(true);
-		workButton.setBorder(BorderFactory.createLineBorder(Color.blue));
-		topHalf.add(workButton, "cell 2 8,alignx center");
+		//workButton.setContentAreaFilled(true);
+		//workButton.setOpaque(true);
+		//workButton.setBorder(BorderFactory.createLineBorder(Color.blue));
+		topHalf.add(workButton, "cell 2 8,grow");
 		
 		completeButton = new JButton("<html>Complete<br />Day</html>");
 		completeButton.setVerticalTextPosition(SwingConstants.BOTTOM);
 		completeButton.setHorizontalTextPosition(SwingConstants.CENTER);
-		topHalf.add(completeButton, "cell 4 8,alignx right,aligny top");
+		topHalf.add(completeButton, "cell 4 8,growx,alignx right,aligny top");
 		
 		/**Bottom half of the ScheduleView. Contains the schedule*/
 		
@@ -241,7 +248,7 @@ public class ScheduleView implements Observer {
 				//System.out.println( ( (TaskPanel)columns.get(WorkSchedule.TODAY).getComponent(currentTaskPosition) ).getName() );
 			}
 			if( currentTaskPosition < columns.get(WorkSchedule.TODAY).getComponentCount() ) //Guard to prevent index out of bounds
-				 columns.get(WorkSchedule.TODAY).getComponent(currentTaskPosition).setBackground(Color.GREEN); //Highlight the current task being worked on
+//				 columns.get(WorkSchedule.TODAY).getComponent(currentTaskPosition).setBackground(Color.GREEN); //Highlight the current task being worked on
 			//TODO: Make the green highlight only happen when PAUSE is clicked. 
 			
 			frame.revalidate();
